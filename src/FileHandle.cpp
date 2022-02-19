@@ -2,8 +2,6 @@
 
 FileHandle::FileHandle()
 {
-    data settingsData;
-    this->settings = &settingsData;
 }
 FileHandle::~FileHandle()
 {
@@ -24,6 +22,14 @@ int FileHandle::openFile(std::string filename)
             std::getline(inputFile,line);
             this->parseSettingsFile(line);
         }
+        //test data is bigger than 0
+        if (    this->settings.server.length() == 0 ||
+                this->settings.Oauth.length() == 0 ||
+                this->settings.username.length() == 0)
+        {
+            std::cerr<<"Settings data error check server, Oauth, username from: "<<filename<<std::endl;
+            exit(-1);
+        }
     }
     else
     {
@@ -38,18 +44,24 @@ void FileHandle::parseSettingsFile(std::string str)
 {
 if (str.compare(0,6,"OAUTH$") == 0)
 {
-    std::cout<<"found oauth"<<std::endl;
+    this->settings.Oauth = this->returnAfterChr(str,'$');
 }
 else if (str.compare(0,7,"SERVER$") == 0)
 {
-    std::cout<<"found server"<<std::endl;
+    this->settings.server = this->returnAfterChr(str,'$');
 }
 else if (str.compare(0,5,"USER$") == 0)
 {
-    std::cout<<"found user"<<std::endl;
+    this->settings.username = this->returnAfterChr(str,'$');
 }
 else if (str.length() == 0 || str.compare(0,1,"#") == 0)
 {}
 else
 std::cerr<<"Parsing error"<<std::endl;
+}
+
+std::string FileHandle::returnAfterChr(std::string str, char a)
+{
+size_t pos = str.find_first_of(a);
+return str.substr(pos+1,str.length());
 }

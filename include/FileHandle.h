@@ -16,8 +16,9 @@ class FileHandle{
 
         void getDataFromFile(std::string filename);
     private:
+        std::string returnAfterChr(std::string str, char a);
         int openFile(std::string filename);
         void parseSettingsFile(std::string str);
-        struct data *settings;
+        struct data settings;
 };
 
