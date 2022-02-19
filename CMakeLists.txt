@@ -5,14 +5,10 @@ project(GyyBot VERSION 0.01)
 #C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-#add subdirectories
-add_subdirectory(src/filehandle)
+#include dir
+include_directories(include)
+file(GLOB SOURCES "src/*.cpp")
+
 #make executable
-add_executable(${PROJECT_NAME} main.cpp)
-
-target_link_libraries(${PROJECT_NAME} PUBLIC filehandle)
-
-target_include_directories(${PROJECT_NAME} PUBLIC
-                            "${PROJECT_BINARY_DIR}"
-                            "${PROJECT_SOURCE_DIR}/src/filehandle")
+add_executable(${PROJECT_NAME} ${SOURCES})
 
