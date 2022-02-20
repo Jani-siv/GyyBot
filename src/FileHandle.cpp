@@ -8,9 +8,9 @@ FileHandle::~FileHandle()
 }
 void FileHandle::getDataFromFile(std::string filename)
 {
-    this->openFile(filename);
+    this->openSettingsFile(filename);
 }
-int FileHandle::openFile(std::string filename)
+int FileHandle::openSettingsFile(std::string filename)
 {
     std::cout<<"opening file"<<std::endl;
     std::string line;
@@ -77,6 +77,16 @@ else if (str.compare(0,8,"CHANNEL$") == 0)
 {
     this->settings.channel = this->returnAfterChr(str,'$');
 }
+else if (str.compare(0,12,"COMMANDFILE$") == 0)
+{
+    this->settings.commandfile = this->returnAfterChr(str,'$');
+    this->testFilesFromSettings(this->settings.commandfile);
+}
+else if (str.compare(0,5,"AUTH$") == 0)
+{
+    this->settings.authfile = this->returnAfterChr(str,'$');
+    this->testFilesFromSettings(this->settings.authfile);
+}
 
 else if (str.length() == 0 || str.compare(0,1,"#") == 0)
 {}
@@ -88,4 +98,41 @@ std::string FileHandle::returnAfterChr(std::string str, char a)
 {
 size_t pos = str.find_first_of(a);
 return str.substr(pos+1,str.length());
+}
+
+void FileHandle::openCommandsFile(std::map<std::string,std::string>&commands)
+{
+    std::ifstream inputFile(this->settings.commandfile.c_str());
+    if (!inputFile.is_open())
+        {
+        std::cerr<<"Cannot open command file: "<<this->settings.commandfile<<std::endl;
+        exit(-1);
+        }
+    std::string line, a,b;
+    while(!inputFile.eof())
+        {
+        std::getline(inputFile,line);
+        if (line.compare(0,1,"#") != 0)
+            {
+            size_t pos = line.find('$');
+            a = line.substr(0,pos-1);
+            b = line.substr(pos,line.length());
+            commands[a] = b;
+            }
+        }   
+}
+void FileHandle::testFilesFromSettings(std::string filename)
+{
+    std::ifstream test(filename.c_str());
+    if (!test.is_open())
+    {
+        std::ofstream test(filename.c_str());
+        std::cout<<"Created file: "<<filename<<std::endl;
+        test.close();
+    }
+    else
+    {
+        test.close();
+    }
+
 }
