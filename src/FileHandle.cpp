@@ -25,9 +25,10 @@ int FileHandle::openFile(std::string filename)
         //test data is bigger than 0
         if (    this->settings.server.length() == 0 ||
                 this->settings.Oauth.length() == 0 ||
-                this->settings.username.length() == 0)
+                this->settings.username.length() == 0 ||
+                this->settings.channel.length() == 0)
         {
-            std::cerr<<"Settings data error check server, Oauth, username from: "<<filename<<std::endl;
+            std::cerr<<"Settings data error check server, Oauth, username and channel from: "<<filename<<std::endl;
             exit(-1);
         }
     }
@@ -71,6 +72,12 @@ else if (str.compare(0,5,"USER$") == 0)
 {
     this->settings.username = this->returnAfterChr(str,'$');
 }
+
+else if (str.compare(0,8,"CHANNEL$") == 0)
+{
+    this->settings.channel = this->returnAfterChr(str,'$');
+}
+
 else if (str.length() == 0 || str.compare(0,1,"#") == 0)
 {}
 else

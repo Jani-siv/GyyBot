@@ -12,6 +12,7 @@ class FileHandle{
             std::string Oauth;
             std::string username;
             std::string server;
+            std::string channel;
             unsigned short port;
         };
 

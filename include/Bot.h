@@ -11,6 +11,10 @@ class Bot {
         FileHandle handle;
         Sock connection;
         void authenticate();
+        void joinChannel();
+        void leaveChannel();
+        void sendPrivMsg(std::string payload);
+        std::string lowerCase(std::string data);
 };
 
 
