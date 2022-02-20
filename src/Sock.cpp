@@ -100,10 +100,15 @@ std::string Sock::getData()
         {
             if (*(buf-1)=='\r') 
             {
-                for(int i=0; i < len-2; i++)
+                for(int i=0; i < len-1; i++)
                 {
                 line += buffer[i];
                 }
+                if (line.compare(0,4,"PING") == 0)
+                    {
+                        this->sendData("PONG");
+                    }
+                line += '\n';
                 return line;
             }
         }

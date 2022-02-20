@@ -12,10 +12,32 @@ void Bot::runBot(std::string settingsFile)
     this->connection.initSocket(handle.settings.server,handle.settings.port);
     this->authenticate();
     std::cout<<this->connection.getData()<<std::endl;
+    std::cout<<this->connection.getData()<<std::endl;
+    std::cout<<this->connection.getData()<<std::endl;
+    std::cout<<this->connection.getData()<<std::endl;
+    std::cout<<this->connection.getData()<<std::endl;
+    std::cout<<this->connection.getData()<<std::endl;
+    std::cout<<this->connection.getData()<<std::endl;
+
+
+
     this->joinChannel();
     std::cout<<this->connection.getData()<<std::endl;
-    this->sendPrivMsg("hello world");
     std::cout<<this->connection.getData()<<std::endl;
+    std::cout<<this->connection.getData()<<std::endl;
+
+    this->sendPrivMsg("hello world");
+    std::string msg = "123456";
+    while(true)
+            {
+                msg = this->connection.getData();
+                std::cout<<msg<<std::endl;
+                size_t pos = msg.find_last_of('!');
+                if (msg.compare(pos,5,"!QUIT") == 0)
+                {
+                    break;
+                }
+            }
     this->leaveChannel();
     std::cout<<this->connection.getData()<<std::endl;
 }
@@ -43,10 +65,10 @@ void Bot::leaveChannel()
     this->connection.sendData(payload);
 }
 
-void sendPrivMsg(std::string payload)
+void Bot::sendPrivMsg(std::string payload)
 {
     std::string channel = this->lowerCase(this->handle.settings.channel);
-    std::string msg = "PRIMSG " + channel + " :" + payload;
+    std::string msg = "PRIVMSG " + channel + " :" + payload;
     this->connection.sendData(msg);
 }
 
