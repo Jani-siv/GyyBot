@@ -1,0 +1,7 @@
+OAUTH$oauth:dfasdflkj
+#Server for local testing
+#SERVER$127.0.0.1:5555
+#irc server
+SERVER$irc://irc.chat.twitch.tv:6667
+USER$someuser
+#comment
