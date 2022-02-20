@@ -48,7 +48,24 @@ if (str.compare(0,6,"OAUTH$") == 0)
 }
 else if (str.compare(0,7,"SERVER$") == 0)
 {
-    this->settings.server = this->returnAfterChr(str,'$');
+    std::string server, port;
+    int tempPort;
+    size_t pos;
+    server = this->returnAfterChr(str,'$');
+    pos = server.find_last_of(':');
+    port = server.substr(pos+1,server.length());
+    
+    tempPort = std::stoi(port);
+    if (tempPort <= std::numeric_limits<short>::max())
+    {
+    this->settings.port = tempPort;
+    this->settings.server = server.substr(0,pos);
+    }
+    else
+    {
+        std::cerr<<"Port number is too big"<<std::endl;
+        exit(-1);
+    }
 }
 else if (str.compare(0,5,"USER$") == 0)
 {

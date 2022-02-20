@@ -9,6 +9,6 @@ Bot::~Bot()
 void Bot::runBot(std::string settingsFile)
 {
     this->handle.getDataFromFile(settingsFile);
-    this->connection.initSocket("127.0.0.1",5555);    
+    this->connection.initSocket(handle.settings.server,handle.settings.port);    
 }
 
