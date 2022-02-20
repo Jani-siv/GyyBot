@@ -10,6 +10,7 @@ class Bot {
     private:
         FileHandle handle;
         Sock connection;
+        void authenticate();
 };
 
 

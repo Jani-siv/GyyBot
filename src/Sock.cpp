@@ -80,11 +80,34 @@ void Sock::getAddressByHost(std::string address)
 
 void Sock::sendData(std::string data)
 {
-
+    data += ENDLINE;
+    if (data.compare(0,4,"PASS"))
+    {
+    std::cout<<data<<std::endl;
+    }
+    send(this->sockFd,data.c_str(),data.size(),0);
 }
 
 std::string Sock::getData()
 {
-    std::string test = "";
-    return test;
+    std::string line;
+    char buffer[BUFFER];
+    char *buf = buffer;
+    int len;
+    for(len=0;recv(this->sockFd,buf,1,0);len++,buf++)
+    {
+        if (*buf=='\n')
+        {
+            if (*(buf-1)=='\r') 
+            {
+                for(int i=0; i < len-2; i++)
+                {
+                line += buffer[i];
+                }
+                return line;
+            }
+        }
+    }
+    return line;
+
 }

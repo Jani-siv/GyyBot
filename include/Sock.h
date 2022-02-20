@@ -5,17 +5,18 @@
 #include <string.h>
 #include <iostream>
 #include <unistd.h>
-
+#define BUFFER 512
+#define ENDLINE "\r\n"
 class Sock{
     public:
         Sock();
         ~Sock();
         void initSocket(std::string address, unsigned short port);
         void sendData(std::string data);
+        std::string getData();
     private:
         void getAddressByHost(std::string address);
         std::string ip_addr;
-        std::string getData();
         struct sockaddr_in server_addr;
         struct hostent *server;
         void getSocketFd();
