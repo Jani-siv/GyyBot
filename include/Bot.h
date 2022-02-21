@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <strings.h>
 #include "../include/FileHandle.h"

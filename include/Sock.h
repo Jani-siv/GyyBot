@@ -1,3 +1,4 @@
+#pragma once
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -11,7 +12,7 @@ class Sock{
     public:
         Sock();
         ~Sock();
-        void initSocket(std::string address, unsigned short port);
+        int initSocket(std::string address, unsigned short port);
         void sendData(std::string data);
         std::string getData();
     private:

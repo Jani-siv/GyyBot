@@ -10,7 +10,7 @@ Sock::~Sock()
         close(this->sockFd);
     }
 }
-void Sock::initSocket(std::string address, unsigned short port)
+int Sock::initSocket(std::string address, unsigned short port)
 {
     this->getSocketFd();
     this->server_addr.sin_family = AF_INET;
@@ -34,6 +34,7 @@ void Sock::initSocket(std::string address, unsigned short port)
     }
     
     std::cout<<"connected to server"<<std::endl;
+    return this->sockFd;
 }
 
 
