@@ -6,6 +6,7 @@
 #include <vector>
 #include <limits>
 #include <map>
+#include <cstdint>
 class FileHandle{
     public:
         FileHandle();
@@ -19,7 +20,6 @@ class FileHandle{
             std::string authfile;
             std::string commandfile;
         };
-
         struct data settings;
         void getDataFromFile(std::string filename);
         void openCommandsFile(std::map<std::string,std::string>&commands);

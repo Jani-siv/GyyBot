@@ -8,7 +8,32 @@ Obs::~Obs()
 }
 void Obs::initConnection(std::string address, int port)
 {
+    //TO-DO create random key
+    //TO-DO set userAgent version number ;)
     this->sockFd = this->conn.initSocket(address,port);
+    std::string payload = this->connectionCommand(address,port);
+    std::cout<<"sending: "<<std::endl;
+    std::cout<<payload<<std::endl;
+    //HTTP 1.1
+    send(this->sockFd,payload.c_str(),payload.size(),0);
+    //read answer as plain text
+    std::string answer;
+    for (int i = 0; i < 5; i++)
+    {
+    answer = this->conn.getData();
+    std::cout<<answer;
+    }
+    //this on only websock protocol
+    //dummy reading
+    this->conn.readWebSock();
+    //send commands
+    this->conn.sendWebSock();
+    //read feed back
+    this->conn.readWebSock();
+}
+
+std::string Obs::connectionCommand(std::string address, int port)
+{
     std::stringstream ss;
     std::string strPort = std::to_string(port);
     std::string get = "GET / HTTP/1.1";
@@ -32,14 +57,7 @@ void Obs::initConnection(std::string address, int port)
         << SecWebSocketProtocol << "\r\n"
         << SecWebSocketVersion << "\r\n\r\n";
     std::string payload = ss.str();
-    std::cout<<"sending: "<<std::endl;
-    std::cout<<payload<<std::endl;
-    send(this->sockFd,payload.c_str(),payload.size(),0);
-    //modify here
-    std::string answer;
-    while(true)
-    {
-    answer = this->conn.getData();
-    std::cout<<answer<<std::endl;
-    }
-} 
+    return payload;
+}
+
+
