@@ -143,12 +143,11 @@ int Sock::readWebSock()
         return 1;
 }
 
-void Sock::sendWebSock()
+void Sock::sendWebSock(std::string payload)
 {
 char header[2];
 char mask[4] = {0x11,0x22,0x33,0x44};
 header[0] = 0x81;
-std::string payload = "{\"request-type\":\"GetSourceSettings\",\"sourceName\":\"testi\",\"message-id\":\"1\"}";
 std::cout<<"data to send: "<<std::endl;
 std::cout<<payload<<std::endl;
 //std::string payload = "Hello";

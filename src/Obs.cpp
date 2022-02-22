@@ -25,10 +25,15 @@ void Obs::initConnection(std::string address, int port)
     }
     //this on only websock protocol
     //dummy reading
+    std::string scene1 = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\"ubuntu\",\"message-id\":\"1\"}";
+    std::string scene2 = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\"ubuntu2\",\"message-id\":\"1\"}";
     this->conn.readWebSock();
     //send commands
-    this->conn.sendWebSock();
+    this->conn.sendWebSock(scene2);
     //read feed back
+    this->conn.readWebSock();
+    sleep(5);
+    this->conn.sendWebSock(scene1);
     this->conn.readWebSock();
 }
 

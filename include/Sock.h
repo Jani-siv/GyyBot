@@ -22,7 +22,7 @@ class Sock{
             char header[2];
             char* payload = nullptr;
         };
-        void sendWebSock();
+        void sendWebSock(std::string payload);
     private:
         struct webSocket web;
         char buff[512];
