@@ -8,7 +8,7 @@ class Obs{
     public:
         Obs();
         ~Obs();
-        void initConnection(std::string address, int port);
+        void initConnection(std::string address, int port, std::string scene);
     private:
         std::string connectionCommand(std::string address, int port);
         int sockFd=0;

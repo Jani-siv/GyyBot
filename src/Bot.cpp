@@ -113,9 +113,8 @@ void Bot::parseMessages(std::string message)
         if (commandPos > pos && commandPos > 0)
         {
             std::string userCommand;
-            std::cout<<"test1"<<std::endl;
             std::string commandMsg = message.substr(commandPos,message.length());
-            std::cout<<"find command from str"<<std::endl;
+            std::cout<<"find command from str"<<commandMsg<<std::endl;
             if (pos > 0)
             {
                 size_t comEnd = commandMsg.find(' ');
@@ -132,7 +131,7 @@ void Bot::parseMessages(std::string message)
                 std::cout<<"user: "<<username<<std::endl;
                 for (auto i = this->commands.begin(); i != commands.end(); i++)
                 {
-                    if (userCommand.find(i->first) < commandMsg.length())
+                    if (userCommand.find(i->first) <= userCommand.length())
                     {
                         //test user permission
                         std::cout<<"found command"<<std::endl;
@@ -155,22 +154,32 @@ void Bot::executeCommand(std::string commandMsg, std::string userCommand)
 {
     std::string arg1,arg2;
     //check if there is args
+    std::cout<<"commandmsg: "<<commandMsg<<" usermsg: "<<userCommand<<std::endl;
     if (commandMsg.length() > userCommand.length())
     {
         size_t pos = commandMsg.find_first_of(' ');
-        std::string allArgs = commandMsg.substr(pos,commandMsg.length());
+        std::string allArgs = commandMsg.substr(pos+1,(commandMsg.length()-1));
+        std::cout<<"ARGS: "<<allArgs<<std::endl;
         pos = allArgs.find_last_of(' ');
-        if (pos > allArgs.length())
+        if (pos >= allArgs.length())
         {
+            std::cout<<"changing scene"<<std::endl;
          //user only one arg commands
-            arg1=allArgs;
-            std::cout<<"working on it"<<std::endl;
+            arg1=allArgs.substr(0,allArgs.length()-1);
+            if (userCommand.find("!scene") == 0)
+            {
+                this->changeScene(arg1);
+            }
         }
         else 
         {
             //use two arg commands
             arg1=allArgs.substr(0,pos);
-            arg2=allArgs.substr(pos,allArgs.length());
+            arg2=allArgs.substr(pos,allArgs.length()-1);
+            if (userCommand.find("!addUser") == 0)
+            {
+                this->addUser(arg1,arg2);
+            }
             std::cout<<"working on it"<<std::endl;
         }
     }
@@ -181,10 +190,6 @@ void Bot::executeCommand(std::string commandMsg, std::string userCommand)
         if (userCommand.find("!quit") == 0)
         {
             this->botRunning = false;
-        }
-        else if (userCommand.find("!scene") == 0)
-        {
-            this->changeScene();
         }
         else if (userCommand.find("!updateUsers") == 0)
         {
@@ -254,12 +259,21 @@ bool Bot::checkUserPermission(std::string username, std::string userCommand)
 
 }
 
-void Bot::changeScene()
+void Bot::changeScene(std::string scene)
 {
-    this->obs.initConnection("192.168.0.224",4444);
+    this->obs.initConnection("192.168.0.224",4444, scene);
 }
 
 void initUsers()
 {
 
 }
+
+void Bot::addUser(std::string username, std::string permission)
+{
+    //check permission and user before adding
+    std::cout<<"username: "<<username<<" permission:"<<permission<<std::endl;
+    std::string payload =  username + "$" + permission;
+    this->handle.addUser(payload);
+}
+

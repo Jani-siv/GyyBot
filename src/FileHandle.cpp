@@ -175,3 +175,18 @@ void FileHandle::testFilesFromSettings(std::string filename)
     }
 
 }
+
+void FileHandle::addUser(std::string userAndPermission)
+{
+    std::ofstream outputFile(this->settings.userfile.c_str(), std::ios_base::app);
+    if (!outputFile.is_open())
+    {
+        std::cerr<<"error opening append mode userfile"<<std::endl;
+        exit(-1);
+    }
+    else
+    {
+    outputFile << userAndPermission;
+    outputFile.close();
+    }
+}

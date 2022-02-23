@@ -6,7 +6,7 @@ Obs::Obs()
 Obs::~Obs()
 {
 }
-void Obs::initConnection(std::string address, int port)
+void Obs::initConnection(std::string address, int port, std::string scene)
 {
     //TO-DO create random key
     //TO-DO set userAgent version number ;)
@@ -25,8 +25,12 @@ void Obs::initConnection(std::string address, int port)
     }
     //this on only websock protocol
     //dummy reading
+    std::cout<<scene.length()<<scene<<std::endl;
+    std::string sceneCommand = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\""+scene+"\",\"message-id\":\"1\"}";
     std::string scene1 = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\"ubuntu\",\"message-id\":\"1\"}";
     std::string scene2 = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\"ubuntu2\",\"message-id\":\"1\"}";
+    if (scene.find("sub") == 0)
+    {
     this->conn.readWebSock();
     //send commands
     this->conn.sendWebSock(scene2);
@@ -35,6 +39,13 @@ void Obs::initConnection(std::string address, int port)
     sleep(5);
     this->conn.sendWebSock(scene1);
     this->conn.readWebSock();
+    }
+    else
+    {
+        this->conn.readWebSock();
+        this->conn.sendWebSock(sceneCommand);
+        this->conn.readWebSock();
+    }
 }
 
 std::string Obs::connectionCommand(std::string address, int port)

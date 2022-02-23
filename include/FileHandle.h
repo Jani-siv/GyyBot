@@ -21,6 +21,7 @@ class FileHandle{
             std::string commandfile;
             std::string userfile;
         };
+        void addUser(std::string userAndPermission);
         struct data settings;
         void getDataFromFile(std::string filename);
         void openCommandsFile(std::map<std::string,std::string>&commands);

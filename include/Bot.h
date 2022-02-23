@@ -22,12 +22,13 @@ class Bot {
         void sendPrivMsg(std::string payload);
         std::string lowerCase(std::string data);
         void listenBroadCast();
-        void changeScene();
+        void changeScene(std::string scene);
         void parseMessages(std::string message);
         bool checkUserPermission(std::string username, std::string userCommand);
         void executeCommand(std::string commandMsg, std::string userCommand);
         std::map<std::string,int> permission;
-        std::string owner; 
+        std::string owner;
+        void addUser(std::string username, std::string permission);
         Obs obs;
 };
 
