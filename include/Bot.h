@@ -24,6 +24,7 @@ class Bot {
         void changeScene();
         void parseMessages(std::string message);
         bool checkUserPermission(std::string username, std::string userCommand);
+        void executeCommand(std::string commandMsg, std::string userCommand);
         std::map<std::string,int> permission;
         
         Obs obs;

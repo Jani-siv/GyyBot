@@ -82,6 +82,12 @@ else if (str.compare(0,12,"COMMANDFILE$") == 0)
     this->settings.commandfile = this->returnAfterChr(str,'$');
     this->testFilesFromSettings(this->settings.commandfile);
 }
+else if (str.compare(0,9,"USERFILE$") == 0)
+{
+    std::cout<<str<<std::endl;
+    this->settings.userfile = this->returnAfterChr(str,'$');
+    this->testFilesFromSettings(this->settings.userfile);
+}
 else if (str.compare(0,5,"AUTH$") == 0)
 {
     this->settings.authfile = this->returnAfterChr(str,'$');
@@ -98,6 +104,34 @@ std::string FileHandle::returnAfterChr(std::string str, char a)
 size_t pos = str.find_first_of(a);
 return str.substr(pos+1,str.length());
 }
+
+
+void FileHandle::openUsersFile(std::map<std::string,std::string>&usersmap)
+{
+    std::ifstream inputFile(this->settings.userfile.c_str());
+    if (!inputFile.is_open())
+    {
+        std::cerr<<"error opening userfile: "<<this->settings.userfile<<std::endl;
+        exit(-1);
+    }
+    std::string line, a,b;
+    std::cout<<"reading user file"<<std::endl;
+    while(!inputFile.eof())
+    {
+        std::getline(inputFile,line);
+        if (line.length() > 0)
+        {
+            if (line.compare(0,1,"#") != 0)
+            {
+                size_t pos = line.find('$');
+                a = line.substr(0,pos);
+                b = line.substr(pos,line.length());
+                usersmap[a]=b;
+            }
+        }
+    }
+}
+
 
 void FileHandle::openCommandsFile(std::map<std::string,std::string>&commands)
 {

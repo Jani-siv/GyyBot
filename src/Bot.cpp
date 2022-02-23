@@ -14,6 +14,7 @@ void Bot::runBot(std::string settingsFile)
 {
     this->handle.getDataFromFile(settingsFile);
     this->handle.openCommandsFile(this->commands);
+    this->handle.openUsersFile(this->users);
     this->connection.initSocket(handle.settings.server,handle.settings.port);
     this->authenticate();
     this->joinChannel();
@@ -165,6 +166,28 @@ void Bot::parseMessages(std::string message)
         }
 }
 
+void Bot::executeCommand(std::string commandMsg, std::string userCommand)
+{
+    std::string arg1,arg2;
+    //check if there is args
+    if (commandMsg.length() > userCommand.length())
+    {
+        size_t pos = commandMsg.find_first_of(' ');
+        std::string allArgs = commandMsg.substr(pos,commandMsg.length());
+        pos = allArgs.find_last_of(' ');
+        if (pos > allArgs.length())
+        {
+            arg1=allArgs;
+        }
+        else 
+        {
+            arg1=allArgs.substr(0,pos);
+            arg2=allArgs.substr(pos,allArgs.length());
+        }
+    }
+
+}
+
 bool Bot::checkUserPermission(std::string username, std::string userCommand)
 {
     std::string commandPermission,userPermission;
@@ -182,8 +205,10 @@ bool Bot::checkUserPermission(std::string username, std::string userCommand)
     }
     for (auto i = this->users.begin(); i != this->users.end(); i++)
     {
+        std::cout<<i->first<<i->second<<std::endl;
         if (username.find(i->first) <= username.length())
         {
+            std::cout<<"found permission"<<std::endl;
             userPermission = i->second;
         }
     }

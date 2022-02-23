@@ -10,3 +10,5 @@ CHANNEL$#chanel
 COMMANDFILE$commands.txt
 #auth user file
 AUTH$user.txt
+#userfile
+USERFILE$user.txt

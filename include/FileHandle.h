@@ -19,10 +19,12 @@ class FileHandle{
             unsigned short port;
             std::string authfile;
             std::string commandfile;
+            std::string userfile;
         };
         struct data settings;
         void getDataFromFile(std::string filename);
         void openCommandsFile(std::map<std::string,std::string>&commands);
+        void openUsersFile(std::map<std::string,std::string>&usersmap);
     private:
         void testFilesFromSettings(std::string filename);
         std::string returnAfterChr(std::string str, char a);
