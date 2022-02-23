@@ -88,6 +88,7 @@ else if (str.compare(0,9,"USERFILE$") == 0)
     this->settings.userfile = this->returnAfterChr(str,'$');
     this->testFilesFromSettings(this->settings.userfile);
 }
+//remove this from function
 else if (str.compare(0,5,"AUTH$") == 0)
 {
     this->settings.authfile = this->returnAfterChr(str,'$');
@@ -125,7 +126,7 @@ void FileHandle::openUsersFile(std::map<std::string,std::string>&usersmap)
             {
                 size_t pos = line.find('$');
                 a = line.substr(0,pos);
-                b = line.substr(pos,line.length());
+                b = line.substr(pos+1,line.length());
                 usersmap[a]=b;
             }
         }

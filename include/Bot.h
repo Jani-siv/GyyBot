@@ -11,6 +11,7 @@ class Bot {
         ~Bot();
         void runBot(std::string settingsFile);
     private:
+        bool botRunning = true;
         std::map<std::string,std::string>commands; //command, permission
         std::map<std::string,std::string>users;
         FileHandle handle;
@@ -26,7 +27,7 @@ class Bot {
         bool checkUserPermission(std::string username, std::string userCommand);
         void executeCommand(std::string commandMsg, std::string userCommand);
         std::map<std::string,int> permission;
-        
+        std::string owner; 
         Obs obs;
 };
 

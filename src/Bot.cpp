@@ -48,8 +48,9 @@ void Bot::joinChannel()
         std::cout<<this->connection.getData();
     }
     //set owner
-    std::string owner = channel.substr(1,channel.length());
-    this->users[owner] = "owner";
+    std::string ownerOfChannel = channel.substr(1,channel.length());
+    this->owner = ownerOfChannel;
+    this->users[this->owner] = "owner";
 }
 
 void Bot::leaveChannel()
@@ -81,7 +82,7 @@ void Bot::listenBroadCast()
 
     std::string msg;
     std::string owner = this->lowerCase(this->handle.settings.channel);
-    while(true)
+    while(this->botRunning == true)
         {
             msg = this->connection.getData();
             if (msg.compare(0,4,"PING") == 0)
@@ -96,25 +97,9 @@ void Bot::listenBroadCast()
             {
                 this->parseMessages(msg);
                 std::cout<<msg<<std::endl;
-             /*   size_t pos = msg.find_last_of('!');
-                if (msg.compare(pos,5,"!quit") == 0)
-                    {
-                        pos = msg.find_last_of('#');
-                        if (msg.compare(pos,owner.length(),owner) == 0)
-                            {
-                                break;
-                            }
-                    }
-                if (msg.compare(pos,6,"!scene") == 0)
-                {
-                    pos = msg.find_last_of('#');
-                    if (msg.compare(pos,owner.length(),owner) == 0)
-                    {
-                        this->changeScene();
-                    }
-                }*/
             }
         }
+    this->sendPrivMsg("Bye Bye cruel world");
 }
 
 void Bot::parseMessages(std::string message)
@@ -154,7 +139,7 @@ void Bot::parseMessages(std::string message)
                         if(this->checkUserPermission(username,userCommand))
                         {
                             std::cout<<"found command and you got permission"<<std::endl;
-
+                            this->executeCommand(commandMsg,userCommand);
                         }
                         else 
                         {
@@ -177,14 +162,43 @@ void Bot::executeCommand(std::string commandMsg, std::string userCommand)
         pos = allArgs.find_last_of(' ');
         if (pos > allArgs.length())
         {
+         //user only one arg commands
             arg1=allArgs;
+            std::cout<<"working on it"<<std::endl;
         }
         else 
         {
+            //use two arg commands
             arg1=allArgs.substr(0,pos);
             arg2=allArgs.substr(pos,allArgs.length());
+            std::cout<<"working on it"<<std::endl;
         }
     }
+    //use without args
+    else
+    {
+        std::cout<<userCommand<<std::endl;
+        if (userCommand.find("!quit") == 0)
+        {
+            this->botRunning = false;
+        }
+        else if (userCommand.find("!scene") == 0)
+        {
+            this->changeScene();
+        }
+        else if (userCommand.find("!updateUsers") == 0)
+        {
+            this->users.clear();
+            this->users[this->owner] = "owner";
+            this->handle.openUsersFile(this->users);
+            std::cout<<"user list and permission updated"<<std::endl;
+        }
+        else
+        {
+            std::cout<<"no command yet for: "<<userCommand<<std::endl;
+        }
+    }
+                        
 
 }
 
@@ -205,7 +219,7 @@ bool Bot::checkUserPermission(std::string username, std::string userCommand)
     }
     for (auto i = this->users.begin(); i != this->users.end(); i++)
     {
-        std::cout<<i->first<<i->second<<std::endl;
+        std::cout<<i->first<<" "<<i->second<<std::endl;
         if (username.find(i->first) <= username.length())
         {
             std::cout<<"found permission"<<std::endl;
