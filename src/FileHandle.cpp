@@ -93,7 +93,6 @@ else if (str.length() == 0 || str.compare(0,1,"#") == 0)
 else
 std::cerr<<"Parsing error"<<std::endl;
 }
-
 std::string FileHandle::returnAfterChr(std::string str, char a)
 {
 size_t pos = str.find_first_of(a);
@@ -109,17 +108,22 @@ void FileHandle::openCommandsFile(std::map<std::string,std::string>&commands)
         exit(-1);
         }
     std::string line, a,b;
+    std::cout<<"Reading commandfile"<<std::endl;
     while(!inputFile.eof())
-        {
+    {
         std::getline(inputFile,line);
-        if (line.compare(0,1,"#") != 0)
-            {
-            size_t pos = line.find('$');
-            a = line.substr(0,pos-1);
-            b = line.substr(pos,line.length());
-            commands[a] = b;
-            }
+        if (line.length() > 0)
+        {
+            if (line.compare(0,1,"#") != 0)
+                {
+                size_t pos = line.find('$');
+                a = line.substr(0,pos);
+                b = line.substr(pos,line.length());
+                commands[a] = b;
+                }
         }   
+
+    }
 }
 void FileHandle::testFilesFromSettings(std::string filename)
 {

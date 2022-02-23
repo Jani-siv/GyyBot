@@ -11,12 +11,12 @@ if (argc  < 2)
 }
     std::cout<<"Hello there.. My name is GyyBot"<<"\n";
     std::cout<<"config filename is: "<<argv[1] <<"\n";
-/*Bot GyyBot;
+Bot GyyBot;
 std::string configFile =argv[1];
 std::cout<<configFile<<std::endl;
 GyyBot.runBot(configFile);
-*/
-Obs test;
-test.initConnection("192.168.0.224",4444);
+
+//Obs test;
+//test.initConnection("192.168.0.224",4444);
 return 0;
 }

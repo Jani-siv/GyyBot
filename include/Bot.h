@@ -3,16 +3,16 @@
 #include <strings.h>
 #include "../include/FileHandle.h"
 #include "../include/Sock.h"
+#include "../include/Obs.h"
 #include <map>
-#include <list>
 class Bot {
     public:
         Bot();
         ~Bot();
         void runBot(std::string settingsFile);
     private:
-        std::map<std::string,std::string>commands;
-        std::list<std::string>users;
+        std::map<std::string,std::string>commands; //command, permission
+        std::map<std::string,std::string>users;
         FileHandle handle;
         Sock connection;
         void authenticate();
@@ -21,6 +21,12 @@ class Bot {
         void sendPrivMsg(std::string payload);
         std::string lowerCase(std::string data);
         void listenBroadCast();
+        void changeScene();
+        void parseMessages(std::string message);
+        bool checkUserPermission(std::string username, std::string userCommand);
+        std::map<std::string,int> permission;
+        
+        Obs obs;
 };
 
 

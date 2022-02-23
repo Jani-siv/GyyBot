@@ -2,6 +2,10 @@
 
 Bot::Bot()
 {
+        this->permission["owner"]=1;
+        this->permission["gyybot"]=2;
+        this->permission["vip"]=3;
+        this->permission["user"]=4;
 }
 Bot::~Bot()
 {
@@ -9,6 +13,7 @@ Bot::~Bot()
 void Bot::runBot(std::string settingsFile)
 {
     this->handle.getDataFromFile(settingsFile);
+    this->handle.openCommandsFile(this->commands);
     this->connection.initSocket(handle.settings.server,handle.settings.port);
     this->authenticate();
     this->joinChannel();
@@ -41,6 +46,9 @@ void Bot::joinChannel()
     {
         std::cout<<this->connection.getData();
     }
+    //set owner
+    std::string owner = channel.substr(1,channel.length());
+    this->users[owner] = "owner";
 }
 
 void Bot::leaveChannel()
@@ -85,9 +93,10 @@ void Bot::listenBroadCast()
             }
             else
             {
+                this->parseMessages(msg);
                 std::cout<<msg<<std::endl;
-                size_t pos = msg.find_last_of('!');
-                if (msg.compare(pos,5,"!QUIT") == 0)
+             /*   size_t pos = msg.find_last_of('!');
+                if (msg.compare(pos,5,"!quit") == 0)
                     {
                         pos = msg.find_last_of('#');
                         if (msg.compare(pos,owner.length(),owner) == 0)
@@ -95,6 +104,123 @@ void Bot::listenBroadCast()
                                 break;
                             }
                     }
+                if (msg.compare(pos,6,"!scene") == 0)
+                {
+                    pos = msg.find_last_of('#');
+                    if (msg.compare(pos,owner.length(),owner) == 0)
+                    {
+                        this->changeScene();
+                    }
+                }*/
             }
         }
+}
+
+void Bot::parseMessages(std::string message)
+{
+
+//:gyyseppi!gyyseppi@gyyseppi.tmi.twitch.tv PRIVMSG #gyyseppi :test
+        std::string priv="PRIVMSG";
+        size_t pos = message.find(priv);
+        std::string command = "!";
+        size_t commandPos = message.find_last_of(command);
+        if (commandPos > pos && commandPos > 0)
+        {
+            std::string userCommand;
+            std::cout<<"test1"<<std::endl;
+            std::string commandMsg = message.substr(commandPos,message.length());
+            std::cout<<"find command from str"<<std::endl;
+            if (pos > 0)
+            {
+                size_t comEnd = commandMsg.find(' ');
+                if (comEnd > 0)
+                {
+                    userCommand = commandMsg.substr(0,comEnd);
+                }
+                else
+                {
+                    userCommand = commandMsg;
+                }
+                size_t endPos = message.find_first_of('!');
+                std::string username = message.substr(1,endPos-1);
+                std::cout<<"user: "<<username<<std::endl;
+                for (auto i = this->commands.begin(); i != commands.end(); i++)
+                {
+                    if (userCommand.find(i->first) < commandMsg.length())
+                    {
+                        //test user permission
+                        std::cout<<"found command"<<std::endl;
+                        if(this->checkUserPermission(username,userCommand))
+                        {
+                            std::cout<<"found command and you got permission"<<std::endl;
+
+                        }
+                        else 
+                        {
+                            std::cout<<"you don't have permission use that command"<<std::endl;
+                        }
+                    }
+                }
+            }
+        }
+}
+
+bool Bot::checkUserPermission(std::string username, std::string userCommand)
+{
+    std::string commandPermission,userPermission;
+    //max two args
+    for (auto i = this->commands.begin(); i != this->commands.end(); i++)
+    {
+        if (userCommand.find(i->first) <= userCommand.length())
+        {
+            commandPermission = i->second;
+        }
+    }
+    if (commandPermission.length() <= 0)
+    {
+        return false;
+    }
+    for (auto i = this->users.begin(); i != this->users.end(); i++)
+    {
+        if (username.find(i->first) <= username.length())
+        {
+            userPermission = i->second;
+        }
+    }
+    if (userPermission.length() == 0)
+    {
+        userPermission = "user";
+    }
+    int up, cp;
+    for (auto i = this->permission.begin(); i != this->permission.end(); i++)
+    {
+        if (userPermission.find(i->first) <= userPermission.length())
+        {
+            up = i->second;
+        }
+        if (commandPermission.find(i->first) <= commandPermission.length())
+        {
+            cp = i->second;
+        }
+    }
+
+ if (up <= cp)
+ {
+     return true;
+ }
+ else
+ {
+     return false;
+ }
+
+}
+
+void Bot::changeScene()
+{
+    this->obs.initConnection("192.168.0.224",4444);
+}
+
+void initUsers()
+{
+
 }
