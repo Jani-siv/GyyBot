@@ -29,6 +29,7 @@ class Bot {
         std::map<std::string,int> permission;
         std::string owner;
         void addUser(std::string username, std::string permission);
+        void showCommands();
         Obs obs;
 };
 

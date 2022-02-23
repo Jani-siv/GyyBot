@@ -175,7 +175,7 @@ void Bot::executeCommand(std::string commandMsg, std::string userCommand)
         {
             //use two arg commands
             arg1=allArgs.substr(0,pos);
-            arg2=allArgs.substr(pos,allArgs.length()-1);
+            arg2=allArgs.substr(pos+1,allArgs.length()-1);
             if (userCommand.find("!addUser") == 0)
             {
                 this->addUser(arg1,arg2);
@@ -197,6 +197,10 @@ void Bot::executeCommand(std::string commandMsg, std::string userCommand)
             this->users[this->owner] = "owner";
             this->handle.openUsersFile(this->users);
             std::cout<<"user list and permission updated"<<std::endl;
+        }
+        else if (userCommand.find("!commands") == 0)
+        {
+            this->showCommands();
         }
         else
         {
@@ -277,3 +281,14 @@ void Bot::addUser(std::string username, std::string permission)
     this->handle.addUser(payload);
 }
 
+void Bot::showCommands()
+{
+    std::string payload = "Commands: ";
+    for (auto i = this->commands.begin(); i != this->commands.end(); i++)
+    {
+     payload += i->first + " ";   
+    }
+    this->sendPrivMsg(payload);
+    
+    
+}
