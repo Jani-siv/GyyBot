@@ -9,7 +9,8 @@ class Obs{
         Obs();
         ~Obs();
         int initConnection(std::string address, int port);
-        void getVersion(int socketFd);
+        void getScenes(int socketFd);
+        void setScene(std::string scene, int socketFd);
     private:
         int createWebSocket();
         struct connectionData{

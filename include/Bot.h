@@ -32,7 +32,7 @@ class Bot {
         std::string owner;
         void addUser(std::string username, std::string permission);
         void showCommands();
-        void getVersionObs();
+        void getScenes();
         Obs obs;
 };
 

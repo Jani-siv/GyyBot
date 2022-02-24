@@ -206,9 +206,9 @@ void Bot::executeCommand(std::string commandMsg, std::string userCommand)
         {
             this->showCommands();
         }
-        else if (userCommand.find("!obsVersion") == 0)
+        else if (userCommand.find("!getScenes") == 0)
         {
-            this->getVersionObs();
+            this->getScenes();
         }
 
         else
@@ -274,8 +274,7 @@ bool Bot::checkUserPermission(std::string username, std::string userCommand)
 
 void Bot::changeScene(std::string scene)
 {
-std::cout<<"Create new function in obs and use address and port there"<<std::endl;
- //   this->obs.initConnection("192.168.0.224",4444, scene);
+   this->obs.setScene(scene,this->obsSocketFd);
 }
 
 void initUsers()
@@ -303,7 +302,7 @@ void Bot::showCommands()
     
 }
 
-void Bot::getVersionObs()
+void Bot::getScenes()
 {
-this->obs.getVersion(this->obsSocketFd);
+this->obs.getScenes(this->obsSocketFd);
 }

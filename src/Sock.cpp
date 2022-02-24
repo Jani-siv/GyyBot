@@ -136,7 +136,6 @@ int Sock::readWebSock(int socketFd)
     else
     {
         std::cout<<"return value of read is: "<<ret<<std::endl;
-        std::cout<<ptr<<std::endl;
     }
     std::cout<<"end of reading"<<std::endl;
     memcpy(this->web.header, ptr,headLen *sizeof(char));
@@ -147,7 +146,6 @@ int Sock::readWebSock(int socketFd)
         return 0;
     }
     int total = emptyData + headLen;
-    char data[len];
     memcpy(this->buff, ptr+(total), (5)*sizeof(char));
     std::cout<<this->buff<<std::endl;
     if ((this->web.header[0] & 0x0F) != 1)

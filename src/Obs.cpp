@@ -67,32 +67,33 @@ int Obs::initConnection(std::string address, int port)
     //this on only websock protocol
     //dummy reading
     std::cout<<scene.length()<<scene<<std::endl;
+*/
+void Obs::setScene(std::string scene,int socketFd)
+{
     std::string sceneCommand = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\""+scene+"\",\"message-id\":\"1\"}";
 
     std::string scene1 = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\"ubuntu\",\"message-id\":\"1\"}";
     std::string scene2 = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\"ubuntu2\",\"message-id\":\"1\"}";
     if (scene.find("sub") == 0)
     {
-    this->conn.readWebSock();
     //send commands
-    this->conn.sendWebSock(scene2);
+    this->conn.sendWebSock(scene2,socketFd);
     //read feed back
-    this->conn.readWebSock();
+    this->conn.readWebSock(socketFd);
     sleep(5);
-    this->conn.sendWebSock(scene1);
-    this->conn.readWebSock();
+    this->conn.sendWebSock(scene1,socketFd);
+    this->conn.readWebSock(socketFd);
     }
     else
     {
-        this->conn.readWebSock();
-        this->conn.sendWebSock(sceneCommand);
-        this->conn.readWebSock();
+        this->conn.sendWebSock(sceneCommand,socketFd);
+        this->conn.readWebSock(socketFd);
     }
 }
-*/
-void Obs::getVersion(int socketFd)
+
+void Obs::getScenes(int socketFd)
 {
-    std::string command = "{\"request-type\":\"GetVersion\",\"message-id\":\"1\"}";
+    std::string command = "{\"request-type\":\"GetSceneList\",\"message-id\":\"1\"}";
     int ret = this->conn.sendWebSock(command,socketFd);
     std::cout<<"return value on function: "<<ret<<std::endl;
     if (ret < 0)
