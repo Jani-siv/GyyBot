@@ -2,6 +2,7 @@
 
 Sock::Sock()
 {
+    
 }
 Sock::~Sock()
 {
