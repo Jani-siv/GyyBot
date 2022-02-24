@@ -6,8 +6,49 @@ Obs::Obs()
 Obs::~Obs()
 {
 }
-void Obs::initConnection(std::string address, int port, std::string scene)
+
+int Obs::createWebSocket()
 {
+    int socketFd = this->conn.initSocket(this->connData.address, this->connData.port);
+    int ret = 0;
+    std::string answer;
+    std::string payload = this->connectionCommand(this->connData.address, this->connData.port);
+    ret = send(socketFd,payload.c_str(),payload.size(),0);
+    if (ret < 0)
+    {
+        std::cerr<<"Error send to websocket"<<std::endl;
+        return -1;
+    }
+    else
+    {
+    for (int i = 0; i < 5; i++)
+    {
+        std::cout<<this->conn.getData(socketFd)<<std::endl;
+    }
+    //dummy read
+    this->conn.readWebSock(socketFd);
+    return socketFd;
+    }
+}
+
+
+int Obs::initConnection(std::string address, int port)
+{
+    this->connData.address = address;
+    this->connData.port = port;
+    int socketFd = this->createWebSocket();
+    if (socketFd >= 0)
+        {
+            return socketFd;
+        }
+    else
+    {
+        std::cerr<<"Error creating websocket"<<std::endl;
+        return -1;
+    }
+
+}
+/*
     //TO-DO create random key
     //TO-DO set userAgent version number ;)
     this->sockFd = this->conn.initSocket(address,port);
@@ -27,6 +68,7 @@ void Obs::initConnection(std::string address, int port, std::string scene)
     //dummy reading
     std::cout<<scene.length()<<scene<<std::endl;
     std::string sceneCommand = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\""+scene+"\",\"message-id\":\"1\"}";
+
     std::string scene1 = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\"ubuntu\",\"message-id\":\"1\"}";
     std::string scene2 = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\"ubuntu2\",\"message-id\":\"1\"}";
     if (scene.find("sub") == 0)
@@ -45,6 +87,21 @@ void Obs::initConnection(std::string address, int port, std::string scene)
         this->conn.readWebSock();
         this->conn.sendWebSock(sceneCommand);
         this->conn.readWebSock();
+    }
+}
+*/
+void Obs::getVersion(int socketFd)
+{
+    std::string command = "{\"request-type\":\"GetVersion\",\"message-id\":\"1\"}";
+    int ret = this->conn.sendWebSock(command,socketFd);
+    std::cout<<"return value on function: "<<ret<<std::endl;
+    if (ret < 0)
+    {
+         std::cerr<<"error in sending packet to websocket"<<std::endl;  
+    }
+    else
+    {
+        this->conn.readWebSock(socketFd);
     }
 }
 

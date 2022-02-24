@@ -8,8 +8,15 @@ class Obs{
     public:
         Obs();
         ~Obs();
-        void initConnection(std::string address, int port, std::string scene);
+        int initConnection(std::string address, int port);
+        void getVersion(int socketFd);
     private:
+        int createWebSocket();
+        struct connectionData{
+            std::string address;
+            int port;
+        };
+        connectionData connData;
         std::string connectionCommand(std::string address, int port);
         int sockFd=0;
         Sock conn;

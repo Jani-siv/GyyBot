@@ -11,6 +11,8 @@ class Bot {
         ~Bot();
         void runBot(std::string settingsFile);
     private:
+        int obsSocketFd = 0;
+        int twitchSocketFd = 0;
         bool botRunning = true;
         std::map<std::string,std::string>commands; //command, permission
         std::map<std::string,std::string>users;
@@ -30,6 +32,7 @@ class Bot {
         std::string owner;
         void addUser(std::string username, std::string permission);
         void showCommands();
+        void getVersionObs();
         Obs obs;
 };
 

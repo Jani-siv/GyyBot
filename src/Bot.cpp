@@ -9,32 +9,36 @@ Bot::Bot()
 }
 Bot::~Bot()
 {
+    close(this->twitchSocketFd);
+    close(this->obsSocketFd);
 }
 void Bot::runBot(std::string settingsFile)
 {
     this->handle.getDataFromFile(settingsFile);
     this->handle.openCommandsFile(this->commands);
     this->handle.openUsersFile(this->users);
-    this->connection.initSocket(handle.settings.server,handle.settings.port);
+    this->twitchSocketFd = this->connection.initSocket(handle.settings.server,handle.settings.port);
+    std::cout<<"twitch ok"<<std::endl;
     this->authenticate();
     this->joinChannel();
     this->sendPrivMsg("Bot has arrived in stream");
+    this->obsSocketFd = this->obs.initConnection("192.168.0.224",4444);
     this->listenBroadCast();
     this->leaveChannel();
-    std::cout<<this->connection.getData()<<std::endl;
+    std::cout<<this->connection.getData(this->twitchSocketFd)<<std::endl;
 }
 
 void Bot::authenticate()
 {
     std::string payload = "PASS " + this->handle.settings.Oauth;
-    this->connection.sendData(payload);
+    this->connection.sendData(payload,this->twitchSocketFd);
     
     std::string nick = this->lowerCase(this->handle.settings.username);
     payload = "NICK " + nick;
-    this->connection.sendData(payload);
+    this->connection.sendData(payload,this->twitchSocketFd);
     for (int i = 0; i < 7; i++)
         {
-            std::cout<<this->connection.getData();
+            std::cout<<this->connection.getData(this->twitchSocketFd);
         }
 }
 
@@ -42,10 +46,10 @@ void Bot::joinChannel()
 {
     std::string channel = this->lowerCase(this->handle.settings.channel);
     std::string payload = "JOIN " + channel;
-    this->connection.sendData(payload);
+    this->connection.sendData(payload,this->twitchSocketFd);
     for (int i=0; i < 3; i++)
     {
-        std::cout<<this->connection.getData();
+        std::cout<<this->connection.getData(this->twitchSocketFd);
     }
     //set owner
     std::string ownerOfChannel = channel.substr(1,channel.length());
@@ -57,14 +61,14 @@ void Bot::leaveChannel()
 {
     std::string channel = this->lowerCase(this->handle.settings.channel);
     std::string payload = "PART " + channel;
-    this->connection.sendData(payload);
+    this->connection.sendData(payload,this->twitchSocketFd);
 }
 
 void Bot::sendPrivMsg(std::string payload)
 {
     std::string channel = this->lowerCase(this->handle.settings.channel);
     std::string msg = "PRIVMSG " + channel + " :" + payload;
-    this->connection.sendData(msg);
+    this->connection.sendData(msg,this->twitchSocketFd);
 }
 
 std::string Bot::lowerCase(std::string data)
@@ -84,7 +88,7 @@ void Bot::listenBroadCast()
     std::string owner = this->lowerCase(this->handle.settings.channel);
     while(this->botRunning == true)
         {
-            msg = this->connection.getData();
+            msg = this->connection.getData(this->twitchSocketFd);
             if (msg.compare(0,4,"PING") == 0)
             {
                 std::cout<<"Connection testing"<<std::endl;
@@ -202,6 +206,11 @@ void Bot::executeCommand(std::string commandMsg, std::string userCommand)
         {
             this->showCommands();
         }
+        else if (userCommand.find("!obsVersion") == 0)
+        {
+            this->getVersionObs();
+        }
+
         else
         {
             std::cout<<"no command yet for: "<<userCommand<<std::endl;
@@ -265,7 +274,8 @@ bool Bot::checkUserPermission(std::string username, std::string userCommand)
 
 void Bot::changeScene(std::string scene)
 {
-    this->obs.initConnection("192.168.0.224",4444, scene);
+std::cout<<"Create new function in obs and use address and port there"<<std::endl;
+ //   this->obs.initConnection("192.168.0.224",4444, scene);
 }
 
 void initUsers()
@@ -291,4 +301,9 @@ void Bot::showCommands()
     this->sendPrivMsg(payload);
     
     
+}
+
+void Bot::getVersionObs()
+{
+this->obs.getVersion(this->obsSocketFd);
 }
