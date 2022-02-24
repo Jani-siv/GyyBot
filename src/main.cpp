@@ -1,6 +1,7 @@
 #include <iostream>
 #include <strings.h>
 #include "../include/Bot.h"
+#include "../include/Obs.h"
 int main(int argc, char *argv[])
 {
 if (argc  < 2)
@@ -14,5 +15,8 @@ Bot GyyBot;
 std::string configFile =argv[1];
 std::cout<<configFile<<std::endl;
 GyyBot.runBot(configFile);
-    return 0;
+
+//Obs test;
+//test.initConnection("192.168.0.224",4444);
+return 0;
 }

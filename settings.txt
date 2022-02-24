@@ -1,0 +1,14 @@
+#password oauth
+OAUTH$oauth:basdfsdf
+#bot username
+USER$UserName
+#server address
+SERVER$irc://irc.chat.twitch.tv:6667
+#channel where to join
+CHANNEL$#chanel
+#user commands file
+COMMANDFILE$commands.txt
+#auth user file
+AUTH$user.txt
+#userfile
+USERFILE$user.txt

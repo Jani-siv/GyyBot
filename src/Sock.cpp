@@ -10,7 +10,7 @@ Sock::~Sock()
         close(this->sockFd);
     }
 }
-void Sock::initSocket(std::string address, unsigned short port)
+int Sock::initSocket(std::string address, unsigned short port)
 {
     this->getSocketFd();
     this->server_addr.sin_family = AF_INET;
@@ -34,6 +34,7 @@ void Sock::initSocket(std::string address, unsigned short port)
     }
     
     std::cout<<"connected to server"<<std::endl;
+    return this->sockFd;
 }
 
 
@@ -100,14 +101,68 @@ std::string Sock::getData()
         {
             if (*(buf-1)=='\r') 
             {
-                for(int i=0; i < len-2; i++)
+                for(int i=0; i < len-1; i++)
                 {
                 line += buffer[i];
                 }
+                if (line.compare(0,4,"PING") == 0)
+                    {
+                        this->sendData("PONG");
+                    }
+                line += '\n';
                 return line;
             }
         }
     }
     return line;
+}
 
+int Sock::readWebSock()
+{
+    char *ptr = this->buff;
+    int headLen = 2;
+    int emptyData = 2;
+    read(this->sockFd,ptr,sizeof(this->buff));
+    memcpy(this->web.header, ptr,headLen *sizeof(char));
+    short int len = (this->web.header[1] & 01111111);
+    if (len <= 0)
+    {
+        std::cout<<"no data in stream."<<std::endl;
+        return 0;
+    }
+    int total = emptyData + headLen;
+    char data[len];
+    memcpy(this->buff, ptr+(total), (5)*sizeof(char));
+    std::cout<<this->buff<<std::endl;
+    if ((this->web.header[0] & 0x0F) != 1)
+    {
+        std::cout<<"op code not plain text"<<std::endl;
+        return -1;
+    }
+    else
+        return 1;
+}
+
+void Sock::sendWebSock(std::string payload)
+{
+char header[2];
+char mask[4] = {0x11,0x22,0x33,0x44};
+header[0] = 0x81;
+std::cout<<"data to send: "<<std::endl;
+std::cout<<payload<<std::endl;
+//std::string payload = "Hello";
+char endPacket[1] = {0x00};
+payload += endPacket[0];
+std::string packet;
+for (size_t i=0; i < payload.length(); i++)
+{
+packet += payload[i] ^ mask[i&3];
+}
+std::stringstream ss;
+header[1] = (payload.length() & 0xFF);
+
+header[1] = header[1] | (1 << 7);
+ss << header[0] << header[1]<<mask[0] <<mask[1]<<mask[2]<<mask[3] << packet;
+payload = ss.str();
+int ret = send(this->sockFd, payload.c_str(), payload.size(),0);
 }

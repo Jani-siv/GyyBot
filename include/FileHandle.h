@@ -1,9 +1,12 @@
+#pragma once
 #include <iostream>
 #include <cstring>
 #include <string>
 #include <fstream>
 #include <vector>
 #include <limits>
+#include <map>
+#include <cstdint>
 class FileHandle{
     public:
         FileHandle();
@@ -12,14 +15,21 @@ class FileHandle{
             std::string Oauth;
             std::string username;
             std::string server;
+            std::string channel;
             unsigned short port;
+            std::string authfile;
+            std::string commandfile;
+            std::string userfile;
         };
-
+        void addUser(std::string userAndPermission);
         struct data settings;
         void getDataFromFile(std::string filename);
+        void openCommandsFile(std::map<std::string,std::string>&commands);
+        void openUsersFile(std::map<std::string,std::string>&usersmap);
     private:
+        void testFilesFromSettings(std::string filename);
         std::string returnAfterChr(std::string str, char a);
-        int openFile(std::string filename);
+        int openSettingsFile(std::string filename);
         void parseSettingsFile(std::string str);
     protected:
 };
