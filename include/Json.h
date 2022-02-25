@@ -6,7 +6,7 @@ class Json{
     public:
         Json();
         ~Json();
-        void parseString(std::string json, std::map<std::string, std::string>&pairedJson);
+        void parseScenes(std::string payload, std::map<int,std::string>&scenes);
     private:
 };
 

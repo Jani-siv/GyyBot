@@ -23,6 +23,7 @@ void Bot::runBot(std::string settingsFile)
     this->joinChannel();
     this->sendPrivMsg("Bot has arrived in stream");
     this->obsSocketFd = this->obs.initConnection("192.168.0.224",4444);
+    this->updateScenes();
     this->listenBroadCast();
     this->leaveChannel();
     std::cout<<this->connection.getData(this->twitchSocketFd)<<std::endl;
@@ -208,7 +209,7 @@ void Bot::executeCommand(std::string commandMsg, std::string userCommand)
         }
         else if (userCommand.find("!getScenes") == 0)
         {
-            this->getScenes();
+            this->sendPrivMsg(this->showScenes());
         }
         else if (userCommand.find("!getRequest") == 0)
         {
@@ -324,3 +325,22 @@ void Bot::availableRequest()
 {
 this->obs.getAvailableRequest(this->obsSocketFd);
 }
+
+void Bot::updateScenes()
+{
+this->getScenes();
+std::string payload = this->obs.getLastRead();
+parseScenes(payload,this->scenes);
+}
+
+std::string Bot::showScenes()
+{
+    std::string payload;
+    for (auto i = this->scenes.begin(); i != this->scenes.end(); i++)
+    {
+        payload += i->second;
+        payload += " ";
+    }
+    return payload;
+}
+

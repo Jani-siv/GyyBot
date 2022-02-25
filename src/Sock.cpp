@@ -1,4 +1,5 @@
 #include "../include/Sock.h"
+#include <vector>
 
 Sock::Sock()
 {
@@ -123,8 +124,9 @@ std::string Sock::getData(int socketFd)
     return line;
 }
 
-int Sock::readWebSock(int socketFd)
+int Sock::readWebSock(int socketFd, std::vector<std::string>&dataStr)
 {
+    memset(this->buff,0,BUFFER*sizeof(char));
     char *ptr = this->buff;
     int headLen = 2;
     int emptyData = 2;
@@ -155,7 +157,36 @@ int Sock::readWebSock(int socketFd)
         return -1;
     }
     else
+    {
+        std::string temp = this->convertCharToString(this->buff);
+        size_t pos;
+        pos = temp.find_first_of("0");
+        while(true)
+        {
+            if (pos > temp.length())
+            {
+                dataStr.push_back(temp);
+                break;
+            }
+            else if ( pos < temp.length() && (temp.compare(pos+1,1,"0") == 0))
+            {
+                dataStr.push_back(temp.substr(0,pos-1));
+                break;
+            }
+            else
+            {
+                pos++;
+            }
+        }
+        dataStr.push_back(temp);
         return 1;
+    }
+}
+
+std::string Sock::convertCharToString(char *a)
+{
+    std::string s(a);
+    return s;
 }
 
 int Sock::sendWebSock(std::string payload, int socketFd)

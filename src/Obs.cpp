@@ -27,7 +27,7 @@ int Obs::createWebSocket()
         std::cout<<this->conn.getData(socketFd)<<std::endl;
     }
     //dummy read
-    this->conn.readWebSock(socketFd);
+    this->conn.readWebSock(socketFd, this->dataStorage);
     return socketFd;
     }
 }
@@ -80,15 +80,15 @@ void Obs::setScene(std::string scene,int socketFd)
     //send commands
     this->conn.sendWebSock(scene2,socketFd);
     //read feed back
-    this->conn.readWebSock(socketFd);
+    this->conn.readWebSock(socketFd,this->dataStorage);
     sleep(5);
     this->conn.sendWebSock(scene1,socketFd);
-    this->conn.readWebSock(socketFd);
+    this->conn.readWebSock(socketFd,this->dataStorage);
     }
     else
     {
         this->conn.sendWebSock(sceneCommand,socketFd);
-        this->conn.readWebSock(socketFd);
+        this->conn.readWebSock(socketFd,this->dataStorage);
     }
 }
 
@@ -103,7 +103,7 @@ void Obs::getScenes(int socketFd)
     }
     else
     {
-        this->conn.readWebSock(socketFd);
+        this->conn.readWebSock(socketFd,this->dataStorage);
     }
 }
 
@@ -163,4 +163,8 @@ std::string Obs::connectionCommand(std::string address, int port)
     return payload;
 }
 
-
+std::string Obs::getLastRead()
+{
+    std::cout<<"getting data from storage"<<std::endl;
+return this->dataStorage.back();
+}

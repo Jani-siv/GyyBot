@@ -3,7 +3,7 @@
 #include "Sock.h"
 #include <string>
 #include <sstream>
-
+#include <vector>
 class Obs{
     public:
         Obs();
@@ -13,7 +13,9 @@ class Obs{
         void setScene(std::string scene, int socketFd);
         void getAvailableRequest(int socketFd);
         void saveReplay(int socketFd);
+        std::string getLastRead();
     private:
+        std::vector<std::string> dataStorage;
         int createWebSocket();
         struct connectionData{
             std::string address;

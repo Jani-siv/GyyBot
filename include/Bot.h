@@ -4,13 +4,17 @@
 #include "../include/FileHandle.h"
 #include "../include/Sock.h"
 #include "../include/Obs.h"
+#include "../include/Json.h"
 #include <map>
-class Bot {
+class Bot : public Json {
     public:
         Bot();
         ~Bot();
         void runBot(std::string settingsFile);
     private:
+        void updateScenes();
+        std::string showScenes();
+        std::map<int,std::string> scenes; // 0 scene is current
         int obsSocketFd = 0;
         int twitchSocketFd = 0;
         bool botRunning = true;
