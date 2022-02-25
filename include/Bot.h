@@ -33,6 +33,8 @@ class Bot {
         void addUser(std::string username, std::string permission);
         void showCommands();
         void getScenes();
+        void availableRequest();
+        void instantReplay();
         Obs obs;
 };
 

@@ -11,6 +11,8 @@ class Obs{
         int initConnection(std::string address, int port);
         void getScenes(int socketFd);
         void setScene(std::string scene, int socketFd);
+        void getAvailableRequest(int socketFd);
+        void saveReplay(int socketFd);
     private:
         int createWebSocket();
         struct connectionData{

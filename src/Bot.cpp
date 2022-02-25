@@ -210,6 +210,14 @@ void Bot::executeCommand(std::string commandMsg, std::string userCommand)
         {
             this->getScenes();
         }
+        else if (userCommand.find("!getRequest") == 0)
+        {
+            this->availableRequest();
+        }
+        else if (userCommand.find("!replay") == 0)
+        {
+            this->instantReplay();
+        }
 
         else
         {
@@ -305,4 +313,14 @@ void Bot::showCommands()
 void Bot::getScenes()
 {
 this->obs.getScenes(this->obsSocketFd);
+}
+
+void Bot::instantReplay()
+{
+this->obs.saveReplay(this->obsSocketFd);
+}
+
+void Bot::availableRequest()
+{
+this->obs.getAvailableRequest(this->obsSocketFd);
 }

@@ -107,6 +107,34 @@ void Obs::getScenes(int socketFd)
     }
 }
 
+void Obs::getAvailableRequest(int socketFd)
+{
+    std::string command = "{\"request-type\":\"GetVersion\",\"message-id\":\"2\"}";
+    int ret = this->conn.sendWebSock(command, socketFd);
+    if (ret < 0)
+    {
+        std::cerr<<"error in sending packet to websocket"<<std::endl;
+}
+}
+
+void Obs::saveReplay(int socketFd)
+{
+    //we need scene where we did come here and set that back
+ std::string command = "{\"request-type\":\"SaveReplayBuffer\",\"message-id\":\"3\"}";
+ int ret = this->conn.sendWebSock(command, socketFd);
+ if (ret >= 0)
+ {
+   sleep(2);
+     command = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\"replay\",\"message-id\":\"4\"}";
+     ret = this->conn.sendWebSock(command, socketFd);
+     //set dynamic time from obs settings
+     sleep(20);
+     command = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\"game\",\"message-id\":\"4\"}";
+     ret = this->conn.sendWebSock(command, socketFd);
+ }
+}
+
+
 std::string Obs::connectionCommand(std::string address, int port)
 {
     std::stringstream ss;
