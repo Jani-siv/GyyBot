@@ -150,7 +150,6 @@ int Sock::readWebSock(int socketFd, std::vector<std::string>&dataStr)
     }
     int total = emptyData + headLen;
     memcpy(this->buff, ptr+(total), (5)*sizeof(char));
-    std::cout<<this->buff<<std::endl;
     if ((this->web.header[0] & 0x0F) != 1)
     {
         std::cout<<"op code not plain text"<<std::endl;

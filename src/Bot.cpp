@@ -1,4 +1,5 @@
 #include "../include/Bot.h"
+#include <string>
 
 Bot::Bot()
 {
@@ -311,14 +312,17 @@ void Bot::showCommands()
     
 }
 
-void Bot::getScenes()
+void Bot::getScenes(int socketFd)
 {
-this->obs.getScenes(this->obsSocketFd);
+    this->obs.getScenes(socketFd);
 }
 
 void Bot::instantReplay()
 {
-this->obs.saveReplay(this->obsSocketFd);
+    this->updateScenes();
+    auto i = this->scenes[0];
+    std::cout<<"current scene:"<<i<<std::endl;
+this->obs.saveReplay(this->obsSocketFd,i);
 }
 
 void Bot::availableRequest()
@@ -328,16 +332,29 @@ this->obs.getAvailableRequest(this->obsSocketFd);
 
 void Bot::updateScenes()
 {
-this->getScenes();
+std::cout<<"get last read"<<std::endl;
+int socket = this->obs.initConnection("192.168.0.224",4444);
+this->getScenes(socket);
 std::string payload = this->obs.getLastRead();
+close(socket);
+std::cout<<"payload"<<std::endl;
+std::cout<<payload<<std::endl;
+std::cout<<"start parsing"<<std::endl;
 parseScenes(payload,this->scenes);
+std::cout<<"parsing done"<<std::endl;
+
 }
 
 std::string Bot::showScenes()
 {
+    std::cout<<"update scenes"<<std::endl;
+    this->updateScenes();
+    //this->getScenes();
     std::string payload;
     for (auto i = this->scenes.begin(); i != this->scenes.end(); i++)
     {
+        payload += std::to_string(i->first);
+            payload += ":";
         payload += i->second;
         payload += " ";
     }

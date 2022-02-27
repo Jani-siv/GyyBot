@@ -12,7 +12,7 @@ class Obs{
         void getScenes(int socketFd);
         void setScene(std::string scene, int socketFd);
         void getAvailableRequest(int socketFd);
-        void saveReplay(int socketFd);
+        void saveReplay(int socketFd, std::string current);
         std::string getLastRead();
     private:
         std::vector<std::string> dataStorage;
