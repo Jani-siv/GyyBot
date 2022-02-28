@@ -1,4 +1,5 @@
 #include "../include/Bot.h"
+#include <iterator>
 #include <string>
 
 Bot::Bot()
@@ -220,6 +221,10 @@ void Bot::executeCommand(std::string commandMsg, std::string userCommand)
         {
             this->instantReplay();
         }
+        else if (userCommand.find("!gamma") == 0)
+        {
+            this->lastScene();
+        }
 
         else
         {
@@ -247,7 +252,7 @@ bool Bot::checkUserPermission(std::string username, std::string userCommand)
     }
     for (auto i = this->users.begin(); i != this->users.end(); i++)
     {
-        std::cout<<i->first<<" "<<i->second<<std::endl;
+      //  std::cout<<i->first<<" "<<i->second<<std::endl;
         if (username.find(i->first) <= username.length())
         {
             std::cout<<"found permission"<<std::endl;
@@ -361,3 +366,22 @@ std::string Bot::showScenes()
     return payload;
 }
 
+void Bot::lastScene()
+{
+
+    int socket = this->obs.initConnection("192.168.0.224",4444);
+    if (this->gamma == false)
+    {
+        this->updateScenes();
+        this->beforeGamma = this->scenes[0];
+        this->obs.setScene(std::prev(this->scenes.end())->second,socket);
+        this->gamma = true;
+    }
+    
+    else if (this->gamma == true)
+    {
+        this->updateScenes();
+        this->obs.setScene(this->beforeGamma, socket);
+        gamma = false;
+    }
+}

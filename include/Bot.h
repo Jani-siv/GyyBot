@@ -12,6 +12,8 @@ class Bot : public Json {
         ~Bot();
         void runBot(std::string settingsFile);
     private:
+        bool gamma = false;
+        std::string beforeGamma;
         void updateScenes();
         std::string showScenes();
         std::map<int,std::string> scenes; // 0 scene is current
@@ -39,6 +41,7 @@ class Bot : public Json {
         void getScenes(int socketFd);
         void availableRequest();
         void instantReplay();
+        void lastScene();
         Obs obs;
 };
 
