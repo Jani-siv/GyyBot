@@ -1,5 +1,7 @@
 #GyyBot 0.1 for twitch
+
 #DO NOT USE THIS IF YOU DON'T KNOW WHAT ARE YOU DOING
+
 #THIS IS BUILD ONLY FOR DEMONSTRATION PURPOSE
 ##############################################################
 
