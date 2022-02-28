@@ -4,13 +4,21 @@
 #include "../include/FileHandle.h"
 #include "../include/Sock.h"
 #include "../include/Obs.h"
+#include "../include/Json.h"
 #include <map>
-class Bot {
+class Bot : public Json {
     public:
         Bot();
         ~Bot();
         void runBot(std::string settingsFile);
     private:
+        bool gamma = false;
+        std::string beforeGamma;
+        void updateScenes();
+        std::string showScenes();
+        std::map<int,std::string> scenes; // 0 scene is current
+        int obsSocketFd = 0;
+        int twitchSocketFd = 0;
         bool botRunning = true;
         std::map<std::string,std::string>commands; //command, permission
         std::map<std::string,std::string>users;
@@ -30,6 +38,10 @@ class Bot {
         std::string owner;
         void addUser(std::string username, std::string permission);
         void showCommands();
+        void getScenes(int socketFd);
+        void availableRequest();
+        void instantReplay();
+        void lastScene();
         Obs obs;
 };
 

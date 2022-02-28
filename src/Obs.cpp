@@ -2,51 +2,121 @@
 
 Obs::Obs()
 {
+
 }
 Obs::~Obs()
 {
 }
-void Obs::initConnection(std::string address, int port, std::string scene)
+
+int Obs::createWebSocket()
 {
-    //TO-DO create random key
-    //TO-DO set userAgent version number ;)
-    this->sockFd = this->conn.initSocket(address,port);
-    std::string payload = this->connectionCommand(address,port);
-    std::cout<<"sending: "<<std::endl;
-    std::cout<<payload<<std::endl;
-    //HTTP 1.1
-    send(this->sockFd,payload.c_str(),payload.size(),0);
-    //read answer as plain text
+    int socketFd = this->conn.initSocket(this->connData.address, this->connData.port);
+    int ret = 0;
     std::string answer;
+    std::string payload = this->connectionCommand(this->connData.address, this->connData.port);
+    ret = send(socketFd,payload.c_str(),payload.size(),0);
+    if (ret < 0)
+    {
+        std::cerr<<"Error send to websocket"<<std::endl;
+        return -1;
+    }
+    else
+    {
     for (int i = 0; i < 5; i++)
     {
-    answer = this->conn.getData();
-    std::cout<<answer;
+        std::cout<<this->conn.getData(socketFd)<<std::endl;
     }
-    //this on only websock protocol
-    //dummy reading
-    std::cout<<scene.length()<<scene<<std::endl;
+    //dummy read
+    this->conn.readWebSock(socketFd, this->dataStorage);
+    return socketFd;
+    }
+}
+
+
+int Obs::initConnection(std::string address, int port)
+{
+    this->connData.address = address;
+    this->connData.port = port;
+    int socketFd = this->createWebSocket();
+    if (socketFd >= 0)
+        {
+            return socketFd;
+        }
+    else
+    {
+        std::cerr<<"Error creating websocket"<<std::endl;
+        return -1;
+    }
+
+}
+void Obs::setScene(std::string scene,int socketFd)
+{
     std::string sceneCommand = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\""+scene+"\",\"message-id\":\"1\"}";
+
     std::string scene1 = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\"ubuntu\",\"message-id\":\"1\"}";
     std::string scene2 = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\"ubuntu2\",\"message-id\":\"1\"}";
     if (scene.find("sub") == 0)
     {
-    this->conn.readWebSock();
     //send commands
-    this->conn.sendWebSock(scene2);
+    this->conn.sendWebSock(scene2,socketFd);
     //read feed back
-    this->conn.readWebSock();
+    this->conn.readWebSock(socketFd,this->dataStorage);
     sleep(5);
-    this->conn.sendWebSock(scene1);
-    this->conn.readWebSock();
+    this->conn.sendWebSock(scene1,socketFd);
+    this->conn.readWebSock(socketFd,this->dataStorage);
     }
     else
     {
-        this->conn.readWebSock();
-        this->conn.sendWebSock(sceneCommand);
-        this->conn.readWebSock();
+        this->conn.sendWebSock(sceneCommand,socketFd);
+        this->conn.readWebSock(socketFd,this->dataStorage);
     }
 }
+
+void Obs::getScenes(int socketFd)
+{
+    std::string command = "{\"request-type\":\"GetSceneList\",\"message-id\":\"1\"}";
+    int ret = this->conn.sendWebSock(command,socketFd);
+    std::cout<<"return value on function: "<<ret<<std::endl;
+    if (ret < 0)
+    {
+         std::cerr<<"error in sending packet to websocket"<<std::endl;  
+    }
+    else
+    {
+        std::cout<<"Saving data to dataStorage"<<std::endl;
+        this->dataStorage.clear();
+        this->conn.readWebSock(socketFd,this->dataStorage);
+    }
+}
+
+void Obs::getAvailableRequest(int socketFd)
+{
+    std::string command = "{\"request-type\":\"GetVersion\",\"message-id\":\"2\"}";
+    int ret = this->conn.sendWebSock(command, socketFd);
+    if (ret < 0)
+    {
+        std::cerr<<"error in sending packet to websocket"<<std::endl;
+}
+}
+
+void Obs::saveReplay(int socketFd, std::string current)
+{
+    std::string command = "{\"request-type\":\"SaveReplayBuffer\",\"message-id\":\"3\"}";
+    int ret = this->conn.sendWebSock(command, socketFd);
+    if (ret >= 0)
+    {
+        sleep(2);
+        command = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\"replay\",\"message-id\":\"4\"}";
+        ret = this->conn.sendWebSock(command, socketFd);
+        //set dynamic time from obs settings
+        //to-do function what get buffer time from obs
+        //this need set manually from settings file
+        sleep(20);
+        command = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\"" + current + "\",\"message-id\":\"4\"}";
+        ret = this->conn.sendWebSock(command, socketFd);
+    }
+}
+
 
 std::string Obs::connectionCommand(std::string address, int port)
 {
@@ -76,4 +146,10 @@ std::string Obs::connectionCommand(std::string address, int port)
     return payload;
 }
 
-
+std::string Obs::getLastRead()
+{
+    //this->dataStorage.clear();
+    //this->conn.readWebSock(socketFd, this->dataStorage);
+    std::cout<<"getting data from storage"<<std::endl;
+return this->dataStorage.back();
+}

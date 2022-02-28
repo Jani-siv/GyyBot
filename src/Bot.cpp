@@ -1,4 +1,6 @@
 #include "../include/Bot.h"
+#include <iterator>
+#include <string>
 
 Bot::Bot()
 {
@@ -9,32 +11,37 @@ Bot::Bot()
 }
 Bot::~Bot()
 {
+    close(this->twitchSocketFd);
+    close(this->obsSocketFd);
 }
 void Bot::runBot(std::string settingsFile)
 {
     this->handle.getDataFromFile(settingsFile);
     this->handle.openCommandsFile(this->commands);
     this->handle.openUsersFile(this->users);
-    this->connection.initSocket(handle.settings.server,handle.settings.port);
+    this->twitchSocketFd = this->connection.initSocket(handle.settings.server,handle.settings.port);
+    std::cout<<"twitch ok"<<std::endl;
     this->authenticate();
     this->joinChannel();
     this->sendPrivMsg("Bot has arrived in stream");
+    this->obsSocketFd = this->obs.initConnection("192.168.0.224",4444);
+    this->updateScenes();
     this->listenBroadCast();
     this->leaveChannel();
-    std::cout<<this->connection.getData()<<std::endl;
+    std::cout<<this->connection.getData(this->twitchSocketFd)<<std::endl;
 }
 
 void Bot::authenticate()
 {
     std::string payload = "PASS " + this->handle.settings.Oauth;
-    this->connection.sendData(payload);
+    this->connection.sendData(payload,this->twitchSocketFd);
     
     std::string nick = this->lowerCase(this->handle.settings.username);
     payload = "NICK " + nick;
-    this->connection.sendData(payload);
+    this->connection.sendData(payload,this->twitchSocketFd);
     for (int i = 0; i < 7; i++)
         {
-            std::cout<<this->connection.getData();
+            std::cout<<this->connection.getData(this->twitchSocketFd);
         }
 }
 
@@ -42,10 +49,10 @@ void Bot::joinChannel()
 {
     std::string channel = this->lowerCase(this->handle.settings.channel);
     std::string payload = "JOIN " + channel;
-    this->connection.sendData(payload);
+    this->connection.sendData(payload,this->twitchSocketFd);
     for (int i=0; i < 3; i++)
     {
-        std::cout<<this->connection.getData();
+        std::cout<<this->connection.getData(this->twitchSocketFd);
     }
     //set owner
     std::string ownerOfChannel = channel.substr(1,channel.length());
@@ -57,14 +64,14 @@ void Bot::leaveChannel()
 {
     std::string channel = this->lowerCase(this->handle.settings.channel);
     std::string payload = "PART " + channel;
-    this->connection.sendData(payload);
+    this->connection.sendData(payload,this->twitchSocketFd);
 }
 
 void Bot::sendPrivMsg(std::string payload)
 {
     std::string channel = this->lowerCase(this->handle.settings.channel);
     std::string msg = "PRIVMSG " + channel + " :" + payload;
-    this->connection.sendData(msg);
+    this->connection.sendData(msg,this->twitchSocketFd);
 }
 
 std::string Bot::lowerCase(std::string data)
@@ -84,7 +91,7 @@ void Bot::listenBroadCast()
     std::string owner = this->lowerCase(this->handle.settings.channel);
     while(this->botRunning == true)
         {
-            msg = this->connection.getData();
+            msg = this->connection.getData(this->twitchSocketFd);
             if (msg.compare(0,4,"PING") == 0)
             {
                 std::cout<<"Connection testing"<<std::endl;
@@ -202,6 +209,23 @@ void Bot::executeCommand(std::string commandMsg, std::string userCommand)
         {
             this->showCommands();
         }
+        else if (userCommand.find("!getScenes") == 0)
+        {
+            this->sendPrivMsg(this->showScenes());
+        }
+        else if (userCommand.find("!getRequest") == 0)
+        {
+            this->availableRequest();
+        }
+        else if (userCommand.find("!replay") == 0)
+        {
+            this->instantReplay();
+        }
+        else if (userCommand.find("!gamma") == 0)
+        {
+            this->lastScene();
+        }
+
         else
         {
             std::cout<<"no command yet for: "<<userCommand<<std::endl;
@@ -228,7 +252,7 @@ bool Bot::checkUserPermission(std::string username, std::string userCommand)
     }
     for (auto i = this->users.begin(); i != this->users.end(); i++)
     {
-        std::cout<<i->first<<" "<<i->second<<std::endl;
+      //  std::cout<<i->first<<" "<<i->second<<std::endl;
         if (username.find(i->first) <= username.length())
         {
             std::cout<<"found permission"<<std::endl;
@@ -265,7 +289,7 @@ bool Bot::checkUserPermission(std::string username, std::string userCommand)
 
 void Bot::changeScene(std::string scene)
 {
-    this->obs.initConnection("192.168.0.224",4444, scene);
+   this->obs.setScene(scene,this->obsSocketFd);
 }
 
 void initUsers()
@@ -291,4 +315,73 @@ void Bot::showCommands()
     this->sendPrivMsg(payload);
     
     
+}
+
+void Bot::getScenes(int socketFd)
+{
+    this->obs.getScenes(socketFd);
+}
+
+void Bot::instantReplay()
+{
+    this->updateScenes();
+    auto i = this->scenes[0];
+    std::cout<<"current scene:"<<i<<std::endl;
+this->obs.saveReplay(this->obsSocketFd,i);
+}
+
+void Bot::availableRequest()
+{
+this->obs.getAvailableRequest(this->obsSocketFd);
+}
+
+void Bot::updateScenes()
+{
+std::cout<<"get last read"<<std::endl;
+int socket = this->obs.initConnection("192.168.0.224",4444);
+this->getScenes(socket);
+std::string payload = this->obs.getLastRead();
+close(socket);
+std::cout<<"payload"<<std::endl;
+std::cout<<payload<<std::endl;
+std::cout<<"start parsing"<<std::endl;
+parseScenes(payload,this->scenes);
+std::cout<<"parsing done"<<std::endl;
+
+}
+
+std::string Bot::showScenes()
+{
+    std::cout<<"update scenes"<<std::endl;
+    this->updateScenes();
+    //this->getScenes();
+    std::string payload;
+    for (auto i = this->scenes.begin(); i != this->scenes.end(); i++)
+    {
+        payload += std::to_string(i->first);
+            payload += ":";
+        payload += i->second;
+        payload += " ";
+    }
+    return payload;
+}
+
+void Bot::lastScene()
+{
+
+    int socket = this->obs.initConnection("192.168.0.224",4444);
+    if (this->gamma == false)
+    {
+        this->updateScenes();
+        this->beforeGamma = this->scenes[0];
+        this->obs.setScene(std::prev(this->scenes.end())->second,socket);
+        this->gamma = true;
+    }
+    
+    else if (this->gamma == true)
+    {
+        this->updateScenes();
+        this->obs.setScene(this->beforeGamma, socket);
+        gamma = false;
+    }
 }
