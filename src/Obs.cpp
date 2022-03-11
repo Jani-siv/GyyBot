@@ -1,4 +1,5 @@
 #include "../include/Obs.h"
+#include <unistd.h>
 
 Obs::Obs()
 {
@@ -55,27 +56,43 @@ void Obs::setScene(std::string scene,int socketFd)
 
     std::string scene1 = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\"ubuntu\",\"message-id\":\"1\"}";
     std::string scene2 = "{\"request-type\":\"SetCurrentScene\",\"scene-name\":\"ubuntu2\",\"message-id\":\"1\"}";
-    if (scene.find("sub") == 0)
-    {
+    
     //send commands
-    this->conn.sendWebSock(scene2,socketFd);
-    //read feed back
-    this->conn.readWebSock(socketFd,this->dataStorage);
-    sleep(5);
-    this->conn.sendWebSock(scene1,socketFd);
-    this->conn.readWebSock(socketFd,this->dataStorage);
+    if (this->serverVersion == false)
+    {
+        if (scene.find("sub") == 0) 
+        {
+            this->conn.sendWebSock(scene2,socketFd);
+            //read feed back
+            this->conn.readWebSock(socketFd,this->dataStorage);
+            sleep(5);
+            this->conn.sendWebSock(scene1,socketFd);
+            this->conn.readWebSock(socketFd,this->dataStorage);
+        }
+        else
+        {
+            this->conn.sendWebSock(sceneCommand,socketFd);
+            this->conn.readWebSock(socketFd,this->dataStorage);
+        }
     }
     else
     {
-        this->conn.sendWebSock(sceneCommand,socketFd);
-        this->conn.readWebSock(socketFd,this->dataStorage);
+        this->conn.serverSendWebSock(sceneCommand,socketFd);
     }
 }
 
 void Obs::getScenes(int socketFd)
 {
     std::string command = "{\"request-type\":\"GetSceneList\",\"message-id\":\"1\"}";
-    int ret = this->conn.sendWebSock(command,socketFd);
+    int ret = 0;
+    if (this->serverVersion == false) 
+    {
+        ret = this->conn.sendWebSock(command,socketFd);
+    }
+    else 
+    {
+        ret = this->conn.serverSendWebSock(command,socketFd);
+    }
     std::cout<<"return value on function: "<<ret<<std::endl;
     if (ret < 0)
     {
@@ -85,7 +102,19 @@ void Obs::getScenes(int socketFd)
     {
         std::cout<<"Saving data to dataStorage"<<std::endl;
         this->dataStorage.clear();
+        if (this->serverVersion == false)
+        {
+        
         this->conn.readWebSock(socketFd,this->dataStorage);
+    
+        }
+        else
+        {
+            std::cout<<"Obs answer to server:"<<std::endl;
+            std::string payload = this->conn.serverReadData(socketFd);
+            std::cout<<payload<<std::endl;
+            this->dataStorage.push_back(payload);
+        }
     }
 }
 

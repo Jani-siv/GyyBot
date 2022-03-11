@@ -14,6 +14,7 @@ class Obs{
         void getAvailableRequest(int socketFd);
         void saveReplay(int socketFd, std::string current);
         std::string getLastRead();
+        bool serverVersion = false;
     private:
         std::vector<std::string> dataStorage;
         int createWebSocket();

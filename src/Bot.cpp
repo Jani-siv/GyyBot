@@ -14,6 +14,22 @@ Bot::~Bot()
     close(this->twitchSocketFd);
     close(this->obsSocketFd);
 }
+
+void Bot::runBotServer(std::string settingsFile, int clientFd)
+{
+    this->obs.serverVersion = true;
+    this->handle.getDataFromFile(settingsFile);
+    this->handle.openCommandsFile(this->commands);
+    this->handle.openUsersFile(this->users);
+    this->twitchSocketFd = this->connection.initSocket(handle.settings.server, handle.settings.port);
+    this->authenticate();
+    this->joinChannel();
+    this->sendPrivMsg("Gyy bot is ready");
+    this->obsSocketFd = clientFd;
+    this->listenBroadCast();
+    this->leaveChannel();
+}
+
 void Bot::runBot(std::string settingsFile)
 {
     this->handle.getDataFromFile(settingsFile);
@@ -338,16 +354,17 @@ this->obs.getAvailableRequest(this->obsSocketFd);
 void Bot::updateScenes()
 {
 std::cout<<"get last read"<<std::endl;
-int socket = this->obs.initConnection("192.168.0.224",4444);
-this->getScenes(socket);
+//int socket = this->obs.initConnection("192.168.0.224",4444);
+this->getScenes(this->obsSocketFd);
 std::string payload = this->obs.getLastRead();
-close(socket);
+//close(socket);
 std::cout<<"payload"<<std::endl;
 std::cout<<payload<<std::endl;
+sleep(5);
 std::cout<<"start parsing"<<std::endl;
-parseScenes(payload,this->scenes);
+this->parseScenes(payload,this->scenes);
 std::cout<<"parsing done"<<std::endl;
-
+//work in this point
 }
 
 std::string Bot::showScenes()
@@ -368,10 +385,18 @@ std::string Bot::showScenes()
 
 void Bot::lastScene()
 {
-
-    int socket = this->obs.initConnection("192.168.0.224",4444);
+    int socket;
+    if (this->serverVersion == false)
+    {
+    socket = this->obs.initConnection("192.168.0.224",4444);
+    }
+    else
+    {
+        socket = this->obsSocketFd;
+    }
     if (this->gamma == false)
     {
+        std::cout<<"change Scene"<<std::endl; 
         this->updateScenes();
         this->beforeGamma = this->scenes[0];
         this->obs.setScene(std::prev(this->scenes.end())->second,socket);
@@ -382,6 +407,6 @@ void Bot::lastScene()
     {
         this->updateScenes();
         this->obs.setScene(this->beforeGamma, socket);
-        gamma = false;
+        this->gamma = false;
     }
 }
