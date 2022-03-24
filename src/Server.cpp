@@ -20,6 +20,7 @@ void Server::createServer()
     this->initSocket();
     //accept client
     bool trueClient = false;
+ while(true) {
     while (trueClient == false)
     {
         this->clientFd = accept(this->serverFd, (struct sockaddr *)&this->address,(socklen_t*)&addrlen);
@@ -50,7 +51,8 @@ if (trueClient == true)
     this->bot = new Bot;
     this->bot->serverVersion = true;
     this->bot->runBotServer(this->settings, this->clientFd);
-
+    trueClient = false;
+}
 }
 //communicate
 

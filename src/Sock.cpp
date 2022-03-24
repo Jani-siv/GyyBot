@@ -145,6 +145,7 @@ std::string Sock::serverReadData(int socketFd)
             }
         }
     }
+    std::cout<<"Server read data: "<<line<<std::endl;
     return line;
 }
 

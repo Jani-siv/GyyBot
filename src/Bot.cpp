@@ -1,6 +1,9 @@
 #include "../include/Bot.h"
+#include <asm-generic/socket.h>
 #include <iterator>
 #include <string>
+#include <sys/socket.h>
+#include <unistd.h>
 
 Bot::Bot()
 {
@@ -21,6 +24,7 @@ void Bot::runBotServer(std::string settingsFile, int clientFd)
     this->handle.getDataFromFile(settingsFile);
     this->handle.openCommandsFile(this->commands);
     this->handle.openUsersFile(this->users);
+        this->botRunning = true;
     this->twitchSocketFd = this->connection.initSocket(handle.settings.server, handle.settings.port);
     this->authenticate();
     this->joinChannel();
@@ -28,6 +32,8 @@ void Bot::runBotServer(std::string settingsFile, int clientFd)
     this->obsSocketFd = clientFd;
     this->listenBroadCast();
     this->leaveChannel();
+    close(this->obsSocketFd);
+    close(this->twitchSocketFd);
 }
 
 void Bot::runBot(std::string settingsFile)
@@ -49,9 +55,25 @@ void Bot::runBot(std::string settingsFile)
 
 void Bot::authenticate()
 {
-    std::string payload = "PASS " + this->handle.settings.Oauth;
-    this->connection.sendData(payload,this->twitchSocketFd);
+    bool con = false;
+    int waitingtime = 1;
     
+    std::string payload = "PASS " + this->handle.settings.Oauth;
+    int ret = 0;
+    while (con == false)
+    {
+    ret = this->connection.sendData(payload,this->twitchSocketFd);
+    if (ret > 0)
+    {
+        con = true;
+        break;
+    }
+    else
+    {
+        sleep(waitingtime);
+        waitingtime = std::pow(waitingtime,2);
+    }
+    }
     std::string nick = this->lowerCase(this->handle.settings.username);
     payload = "NICK " + nick;
     this->connection.sendData(payload,this->twitchSocketFd);
@@ -105,8 +127,17 @@ void Bot::listenBroadCast()
 
     std::string msg;
     std::string owner = this->lowerCase(this->handle.settings.channel);
+    int error = 0;
+    socklen_t len = sizeof(error);
+
     while(this->botRunning == true)
         {
+            int retval = getsockopt(this->obsSocketFd, SOL_SOCKET,SO_ERROR, &error, &len);
+            if (error != 0)
+            {
+                this->botRunning = false;
+                break;
+            }
             msg = this->connection.getData(this->twitchSocketFd);
             if (msg.compare(0,4,"PING") == 0)
             {
@@ -122,6 +153,7 @@ void Bot::listenBroadCast()
                 std::cout<<msg<<std::endl;
             }
         }
+    sleep(1);
     this->sendPrivMsg("Bye Bye cruel world");
 }
 
@@ -405,8 +437,11 @@ void Bot::lastScene()
     
     else if (this->gamma == true)
     {
-        this->updateScenes();
+        std::cout<<"gamma true!!!"<<std::endl;
+       // this->updateScenes();
+        std::cout<<"scenes updated!!!"<<std::endl;
         this->obs.setScene(this->beforeGamma, socket);
+        std::cout<<"scene changet back"<<std::endl;
         this->gamma = false;
     }
 }
