@@ -1,6 +1,9 @@
 #include "../include/Bot.h"
+#include <asm-generic/socket.h>
 #include <iterator>
 #include <string>
+#include <sys/socket.h>
+#include <unistd.h>
 
 Bot::Bot()
 {
@@ -14,6 +17,25 @@ Bot::~Bot()
     close(this->twitchSocketFd);
     close(this->obsSocketFd);
 }
+
+void Bot::runBotServer(std::string settingsFile, int clientFd)
+{
+    this->obs.serverVersion = true;
+    this->handle.getDataFromFile(settingsFile);
+    this->handle.openCommandsFile(this->commands);
+    this->handle.openUsersFile(this->users);
+        this->botRunning = true;
+    this->twitchSocketFd = this->connection.initSocket(handle.settings.server, handle.settings.port);
+    this->authenticate();
+    this->joinChannel();
+    this->sendPrivMsg("Gyy bot is ready");
+    this->obsSocketFd = clientFd;
+    this->listenBroadCast();
+    this->leaveChannel();
+    close(this->obsSocketFd);
+    close(this->twitchSocketFd);
+}
+
 void Bot::runBot(std::string settingsFile)
 {
     this->handle.getDataFromFile(settingsFile);
@@ -33,9 +55,25 @@ void Bot::runBot(std::string settingsFile)
 
 void Bot::authenticate()
 {
-    std::string payload = "PASS " + this->handle.settings.Oauth;
-    this->connection.sendData(payload,this->twitchSocketFd);
+    bool con = false;
+    int waitingtime = 1;
     
+    std::string payload = "PASS " + this->handle.settings.Oauth;
+    int ret = 0;
+    while (con == false)
+    {
+    ret = this->connection.sendData(payload,this->twitchSocketFd);
+    if (ret > 0)
+    {
+        con = true;
+        break;
+    }
+    else
+    {
+        sleep(waitingtime);
+        waitingtime = std::pow(waitingtime,2);
+    }
+    }
     std::string nick = this->lowerCase(this->handle.settings.username);
     payload = "NICK " + nick;
     this->connection.sendData(payload,this->twitchSocketFd);
@@ -89,8 +127,17 @@ void Bot::listenBroadCast()
 
     std::string msg;
     std::string owner = this->lowerCase(this->handle.settings.channel);
+    int error = 0;
+    socklen_t len = sizeof(error);
+
     while(this->botRunning == true)
         {
+            int retval = getsockopt(this->obsSocketFd, SOL_SOCKET,SO_ERROR, &error, &len);
+            if (error != 0)
+            {
+                this->botRunning = false;
+                break;
+            }
             msg = this->connection.getData(this->twitchSocketFd);
             if (msg.compare(0,4,"PING") == 0)
             {
@@ -106,6 +153,7 @@ void Bot::listenBroadCast()
                 std::cout<<msg<<std::endl;
             }
         }
+    sleep(1);
     this->sendPrivMsg("Bye Bye cruel world");
 }
 
@@ -338,16 +386,17 @@ this->obs.getAvailableRequest(this->obsSocketFd);
 void Bot::updateScenes()
 {
 std::cout<<"get last read"<<std::endl;
-int socket = this->obs.initConnection("192.168.0.224",4444);
-this->getScenes(socket);
+//int socket = this->obs.initConnection("192.168.0.224",4444);
+this->getScenes(this->obsSocketFd);
 std::string payload = this->obs.getLastRead();
-close(socket);
+//close(socket);
 std::cout<<"payload"<<std::endl;
 std::cout<<payload<<std::endl;
+sleep(5);
 std::cout<<"start parsing"<<std::endl;
-parseScenes(payload,this->scenes);
+this->parseScenes(payload,this->scenes);
 std::cout<<"parsing done"<<std::endl;
-
+//work in this point
 }
 
 std::string Bot::showScenes()
@@ -368,10 +417,18 @@ std::string Bot::showScenes()
 
 void Bot::lastScene()
 {
-
-    int socket = this->obs.initConnection("192.168.0.224",4444);
+    int socket;
+    if (this->serverVersion == false)
+    {
+    socket = this->obs.initConnection("192.168.0.224",4444);
+    }
+    else
+    {
+        socket = this->obsSocketFd;
+    }
     if (this->gamma == false)
     {
+        std::cout<<"change Scene"<<std::endl; 
         this->updateScenes();
         this->beforeGamma = this->scenes[0];
         this->obs.setScene(std::prev(this->scenes.end())->second,socket);
@@ -380,8 +437,11 @@ void Bot::lastScene()
     
     else if (this->gamma == true)
     {
-        this->updateScenes();
+        std::cout<<"gamma true!!!"<<std::endl;
+       // this->updateScenes();
+        std::cout<<"scenes updated!!!"<<std::endl;
         this->obs.setScene(this->beforeGamma, socket);
-        gamma = false;
+        std::cout<<"scene changet back"<<std::endl;
+        this->gamma = false;
     }
 }

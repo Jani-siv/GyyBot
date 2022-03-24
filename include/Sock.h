@@ -28,7 +28,10 @@ class Sock{
             int port;
         };
         int sendWebSock(std::string payload, int socketFd);
+        int serverSendWebSock(std::string payload, int socketFd);
+        std::string serverReadData(int socketFd);
     private:
+        
         std::string convertCharToString(char *a);
         connectionData connData;
         int createWebSocket();

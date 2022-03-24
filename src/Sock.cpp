@@ -1,4 +1,5 @@
 #include "../include/Sock.h"
+#include <cstddef>
 #include <vector>
 
 Sock::Sock()
@@ -124,6 +125,31 @@ std::string Sock::getData(int socketFd)
     return line;
 }
 
+std::string Sock::serverReadData(int socketFd)
+{
+    std::string line;
+    char buffer[BUFFER];
+    char* buf = buffer;
+    int len;
+    for(len = 0; recv(socketFd,buf,1,0);len++,buf++)
+    {
+        if (*buf =='0')
+        {
+            if (*(buf-1) == '}')
+            {
+                for (int i = 0; i < len; i++)
+                {
+                    line += buffer[i];
+                }
+                return line;
+            }
+        }
+    }
+    std::cout<<"Server read data: "<<line<<std::endl;
+    return line;
+}
+
+
 int Sock::readWebSock(int socketFd, std::vector<std::string>&dataStr)
 {
     memset(this->buff,0,BUFFER*sizeof(char));
@@ -131,7 +157,12 @@ int Sock::readWebSock(int socketFd, std::vector<std::string>&dataStr)
     int headLen = 2;
     int emptyData = 2;
     std::cout<<"reading data from websocket"<<std::endl;
-    int ret = read(socketFd,ptr,sizeof(this->buff));
+    int ret = 0;
+    std::cout<<"Socket number: "<<socketFd<<std::endl;
+    
+    
+    ret = read(socketFd,ptr,sizeof(this->buff));
+    
     if (ret<0)
     {
         std::cerr<<"error reading socket"<<std::endl;
@@ -140,6 +171,9 @@ int Sock::readWebSock(int socketFd, std::vector<std::string>&dataStr)
     {
         std::cout<<"return value of read is: "<<ret<<std::endl;
     }
+    char *ptr7;
+    ptr7 = this->buff;
+    std::cout<<ptr7<<std::endl;
     std::cout<<"end of reading"<<std::endl;
     memcpy(this->web.header, ptr,headLen *sizeof(char));
     short int len = (this->web.header[1] & 01111111);
@@ -186,6 +220,12 @@ std::string Sock::convertCharToString(char *a)
 {
     std::string s(a);
     return s;
+}
+
+int Sock::serverSendWebSock(std::string payload, int socketFd)
+{
+    int ret = send(socketFd,payload.c_str(),payload.size(),0);
+    return ret;
 }
 
 int Sock::sendWebSock(std::string payload, int socketFd)

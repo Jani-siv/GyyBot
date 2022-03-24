@@ -1,4 +1,5 @@
 #pragma once
+#include <math.h>
 #include <iostream>
 #include <strings.h>
 #include "../include/FileHandle.h"
@@ -11,6 +12,8 @@ class Bot : public Json {
         Bot();
         ~Bot();
         void runBot(std::string settingsFile);
+        void runBotServer(std::string settingsFile,int clientFd);
+        bool serverVersion = false;
     private:
         bool gamma = false;
         std::string beforeGamma;
